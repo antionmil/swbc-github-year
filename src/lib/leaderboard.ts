@@ -16,7 +16,23 @@ import type { YearData } from "./github";
  * Everything degrades to "no leaderboard" when the env vars are absent, so the
  * site keeps working before Supabase is provisioned.
  */
-const url = process.env.SUPABASE_URL;
+/** Only the ORIGIN is wanted. The dashboard shows the project URL in several
+ *  places, and some of them carry a path (".../rest/v1") or a trailing slash.
+ *  supabase-js appends its own "/rest/v1/<table>", so anything extra produces
+ *  a doubled path and PostgREST rejects it with PGRST125 "Invalid path
+ *  specified in request URL" — on the write only, which makes it look like a
+ *  permissions problem rather than a typo. Normalising here ends that. */
+function origin(raw?: string) {
+  if (!raw) return undefined;
+  try {
+    return new URL(raw.trim()).origin;
+  } catch {
+    console.error("[leaderboard] SUPABASE_URL is not a valid URL");
+    return undefined;
+  }
+}
+
+const url = origin(process.env.SUPABASE_URL);
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const leaderboardEnabled = Boolean(url && key);

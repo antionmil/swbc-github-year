@@ -24,7 +24,7 @@ export async function GET() {
   if (!url || !key) return NextResponse.json({ urlSet: !!url, keySet: !!key });
 
   const { createClient } = await import("@supabase/supabase-js");
-  const db = createClient(url, key, { auth: { persistSession: false } });
+  const db = createClient(new URL(url).origin, key, { auth: { persistSession: false } });
 
   const read = await db.from("profiles").select("handle", { count: "exact", head: true });
   const write = await db.from("profiles").upsert(
@@ -38,6 +38,7 @@ export async function GET() {
   return NextResponse.json({
     keyRole: keyRole(key),
     urlHost: new URL(url).hostname.split(".").slice(-2).join("."),
+    urlExtraPath: new URL(url).pathname + new URL(url).search,
     read: read.error ? { code: read.error.code, message: read.error.message } : { rows: read.count },
     write: write.error ? { code: write.error.code, message: write.error.message } : "ok",
   });
