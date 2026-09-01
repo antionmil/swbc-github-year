@@ -155,7 +155,7 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
         />
         <a
           href={posterUrl(d.handle)}
-          download={`${d.handle}-year-in-commits.png`}
+          download={`${displayHandle(d.handle)}-year-in-commits.png`}
           className="rounded-full bg-accent px-7 py-3 text-sm font-bold tracking-[0.14em] text-ground uppercase"
         >
           Download poster

@@ -36,7 +36,7 @@ export function Board({ rows }: { rows: Row[] }) {
                 <div className="flex items-baseline gap-3 sm:gap-5">
                   <span className="w-6 shrink-0 text-sm text-muted tabular-nums">{i + 1}</span>
                   <span className="min-w-0 flex-1 truncate text-base sm:text-lg">
-                    {r.handle}
+                    {displayHandle(r.handle)}
                   </span>
                   <span className="font-display shrink-0 text-base font-bold text-accent tabular-nums sm:text-lg">
                     {r.fill_pct}%
