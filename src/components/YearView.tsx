@@ -22,7 +22,7 @@ function Stat({ n, k }: { n: string | number; k: string }) {
 
 /** One presentation, two routes: the cached public page and the signed-in
  *  `/me`. `slot` is the only thing that differs — the leaderboard card. */
-export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
+export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; after?: ReactNode }) {
   /* Exactly four, always. The list used to grow to five when someone had pull
      requests and shrink to four when they did not, so a three-column grid left
      one tile stranded on a row of its own. Four fills 2x2 on a phone and one
@@ -93,6 +93,8 @@ export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
           ))}
         </section>
       )}
+
+      {after}
 
       {/* The poster: the thing you save and the thing a link unfurls as — not
           the page itself. A fixed 2:3 artwork never behaved as a web page. */}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { YearView, posterUrl } from "@/components/YearView";
 import { fetchYear, isValidLogin, UnknownUser, type YearData } from "@/lib/github";
-import { RankReveal } from "@/components/RankReveal";
+import { RankReveal, RevealedBoard } from "@/components/RankReveal";
 import { fillPct, leaderboardEnabled } from "@/lib/leaderboard";
 
 /* Cached and PUBLIC — genuinely, now. It previously declared `revalidate` and
@@ -86,6 +86,7 @@ export default async function UserPage({ params }: { params: Promise<{ username:
     <YearView
       d={d}
       slot={leaderboardEnabled && <RankReveal handle={d.handle} fill={fillPct(d)} />}
+      after={leaderboardEnabled && <RevealedBoard handle={d.handle} />}
     />
   );
 }
