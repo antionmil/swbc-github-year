@@ -2,6 +2,20 @@ import type { YearData } from "@/lib/github";
 
 const LEVELS = ["#16171a", "#3d3320", "#6b5522", "#a37c21", "#e8b23c"];
 
+/* A native title attribute, not a custom tooltip. It costs no JavaScript on
+   the page most people arrive at from a shared link, it is keyboard and
+   screen-reader friendly for free, and the alternative — a styled tooltip —
+   needs a tap handler to work at all on a phone, which is where the traffic
+   is. */
+const DAY = (iso: string) =>
+  new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+
 function level(n: number, max: number) {
   if (n === 0) return 0;
   const r = n / max;
@@ -57,7 +71,7 @@ export function Grid({
             {week.map((n, j) => (
               <div
                 key={j}
-                title={`${n} contribution${n === 1 ? "" : "s"}`}
+                title={`${n === 0 ? "No" : n} contribution${n === 1 ? "" : "s"} · ${DAY(d.dates[i]?.[j] ?? "")}`}
                 style={{
                   aspectRatio: "1",
                   borderRadius: 2,

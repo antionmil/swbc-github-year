@@ -49,6 +49,10 @@ export type YearData = {
   totals: { commits: number; prs: number; issues: number; reviews: number; repos: number };
   topRepos: Repo[];
   calendar: number[][];
+  /** The date behind each cell, same shape as `calendar`. Already fetched —
+   *  it was being discarded, which is why the tooltip could only say how many
+   *  and never which day. */
+  dates: string[][];
   /** Month labels positioned by WEEK INDEX. The range is a rolling 12 months,
    *  so hardcoding Jan-Dec described a calendar year the data never covered. */
   months: { label: string; week: number }[];
@@ -123,12 +127,13 @@ function shape(user: RawUser, from: Date, to: Date): YearData {
     restrictedContributionsCount: number;
     hasAnyRestrictedContributions: boolean;
     contributionCalendar: {
-      weeks: { firstDay: string; contributionDays: { contributionCount: number }[] }[];
+      weeks: { firstDay: string; contributionDays: { date: string; contributionCount: number }[] }[];
     };
   };
 
   const rawWeeks = c.contributionCalendar.weeks;
   const weeks: number[][] = rawWeeks.map((w) => w.contributionDays.map((d) => d.contributionCount));
+  const dates: string[][] = rawWeeks.map((w) => w.contributionDays.map((d) => d.date));
 
   // A label at each week where the month changes - derived from the data, so
   // the axis always matches the range actually fetched.
@@ -175,6 +180,7 @@ function shape(user: RawUser, from: Date, to: Date): YearData {
       commits: r.contributions.totalCount,
     })),
     calendar: weeks,
+    dates,
     months,
     privateCount: c.restrictedContributionsCount ?? 0,
     hasPrivate: Boolean(c.hasAnyRestrictedContributions),
