@@ -45,53 +45,51 @@ function scatterMap() {
   );
 }
 
-function Layer({
-  cells,
-  className,
-  cascade = false,
-}: {
-  cells: number[][];
-  className: string;
-  cascade?: boolean;
-}) {
+/**
+ * The hero.
+ *
+ * ONE layer, not two. Cross-fading a word layer over a scatter layer meant
+ * that mid-transition you saw both at once, and the gold came out muddy olive
+ * — that was the dullness, not the colour itself. Here every cell owns two
+ * colours and animates between them, so there is never a blend of two grids:
+ * a year of dots draws itself in, holds, then resolves into the words.
+ */
+export function HeroGrid() {
+  const word = wordMap();
+  const scatter = scatterMap();
+
   return (
     <div
-      className={`${className} grid ${cascade ? "cascade" : ""}`}
+      className="grid w-full"
       style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gap: 2 }}
     >
       {Array.from({ length: COLS }, (_, c) => (
         <div key={c} className="grid" style={{ gridTemplateRows: `repeat(${ROWS}, 1fr)`, gap: 2 }}>
-          {Array.from({ length: ROWS }, (_, r) => (
-            <div
-              key={r}
-              style={{
-                aspectRatio: "1",
-                borderRadius: 2,
-                background: LEVELS[cells[r][c]],
-                ...(cascade ? { animationDelay: `${c * 0.018}s` } : {}),
-              }}
-            />
-          ))}
+          {Array.from({ length: ROWS }, (_, r) => {
+            const from = LEVELS[scatter[r][c]];
+            const to = word[r][c] ? LEVELS[4] : LEVELS[0];
+            return (
+              <div
+                key={r}
+                className="hero-cell"
+                style={
+                  {
+                    aspectRatio: "1",
+                    borderRadius: 2,
+                    backgroundColor: from,
+                    "--from": from,
+                    "--to": to,
+                    // Draw in left to right, then morph in the same order, so
+                    // the word resolves as a sweep rather than all at once.
+                    "--in": `${c * 0.016}s`,
+                    "--morph": `${1.3 + c * 0.008}s`,
+                  } as React.CSSProperties
+                }
+              />
+            );
+          })}
         </div>
       ))}
-    </div>
-  );
-}
-
-/**
- * The hero.
- *
- * It used to show a real stranger's year with a caption explaining whose it
- * was — which meant the first thing on the page needed a footnote. The cells
- * spell a word instead, then scatter into the shape of a year: the brand and
- * the demonstration in one move, no caption, and no GitHub call on the home
- * page at all.
- */
-export function HeroGrid() {
-  return (
-    <div className="relative w-full">
-      <Layer cells={wordMap()} className="hero-word" cascade />
-      <Layer cells={scatterMap()} className="hero-year absolute inset-0" />
     </div>
   );
 }

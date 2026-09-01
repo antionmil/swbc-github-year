@@ -50,16 +50,27 @@ body { font-family: var(--font-body); }
 }
 
 /* HERO.
-   The word draws itself in once, then the two layers trade places on a slow
-   loop. This is the one place a loop is right — it is ambient, it carries no
-   text, and it is the page's only piece of art. */
-@keyframes hero-word { 0%, 38% { opacity: 1 } 50%, 88% { opacity: 0 } 100% { opacity: 1 } }
-@keyframes hero-year { 0%, 38% { opacity: 0 } 50%, 88% { opacity: 1 } 100% { opacity: 0 } }
-.hero-word { animation: hero-word 9s ease-in-out 1.6s infinite; }
-.hero-year { opacity: 0; animation: hero-year 9s ease-in-out 1.6s infinite; }
+   A year of contributions draws itself in, holds long enough to be read as a
+   graph, then resolves into the words. It runs ONCE and rests on the word —
+   the word is the brand, so it is the right thing to end on, and looping a
+   headline would become a tic.
 
-/* Reduced motion keeps the word and drops the transition entirely. */
+   Each cell animates its own background between two fixed colours it carries
+   as custom properties. Two stacked layers cross-fading looked muddy: for the
+   middle of the transition you were seeing both grids at once. */
+@keyframes hero-in { from { opacity: 0; transform: scale(.3) } to { opacity: 1; transform: scale(1) } }
+@keyframes hero-morph {
+  0%, 42%   { background-color: var(--from) }
+  72%, 100% { background-color: var(--to) }
+}
+.hero-cell {
+  opacity: 0;
+  animation:
+    hero-in .45s cubic-bezier(.16,1,.3,1) var(--in) forwards,
+    hero-morph 4.2s cubic-bezier(.4,0,.2,1) var(--morph) forwards;
+}
+
+/* Reduced motion goes straight to the resting state: the word, no movement. */
 @media (prefers-reduced-motion: reduce) {
-  .hero-word { animation: none; opacity: 1 }
-  .hero-year { animation: none; opacity: 0 }
+  .hero-cell { opacity: 1; animation: none; background-color: var(--to) }
 }
