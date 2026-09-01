@@ -71,7 +71,7 @@ export async function record(d: YearData): Promise<void> {
   if (!leaderboardEnabled) return;
   try {
     const { error } = await db()
-      .from("profiles")
+      .from("leaderboard")
       .upsert(
         {
           handle: d.handle.toLowerCase(),
@@ -96,7 +96,7 @@ export async function top(limit = 100): Promise<Row[]> {
   if (!leaderboardEnabled) return [];
   try {
     const { data, error } = await db()
-      .from("profiles")
+      .from("leaderboard")
       .select("handle:display_handle, fill_pct, active_days, total_days, contributions, streak, updated_at")
       .order("fill_pct", { ascending: false })
       .order("contributions", { ascending: false })
@@ -115,13 +115,13 @@ export async function rankOf(handle: string): Promise<{ rank: number; of: number
   try {
     const c = db();
     const [all, mine] = await Promise.all([
-      c.from("profiles").select("handle", { count: "exact", head: true }),
-      c.from("profiles").select("fill_pct").eq("handle", handle.toLowerCase()).maybeSingle(),
+      c.from("leaderboard").select("handle", { count: "exact", head: true }),
+      c.from("leaderboard").select("fill_pct").eq("handle", handle.toLowerCase()).maybeSingle(),
     ]);
     if (fail("rank count", all.error) || fail("rank self", mine.error)) return null;
     if (!mine.data) return null;
     const { count: better, error } = await c
-      .from("profiles")
+      .from("leaderboard")
       .select("handle", { count: "exact", head: true })
       .gt("fill_pct", mine.data.fill_pct);
     if (fail("rank better", error)) return null;
@@ -134,5 +134,5 @@ export async function rankOf(handle: string): Promise<{ rank: number; of: number
 
 export async function removeHandle(handle: string): Promise<void> {
   if (!leaderboardEnabled) return;
-  await db().from("profiles").delete().eq("handle", handle.toLowerCase());
+  await db().from("leaderboard").delete().eq("handle", handle.toLowerCase());
 }

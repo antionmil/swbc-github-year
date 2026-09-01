@@ -26,18 +26,27 @@ export async function GET() {
   const { createClient } = await import("@supabase/supabase-js");
   const db = createClient(new URL(url).origin, key, { auth: { persistSession: false } });
 
-  const read = await db.from("profiles").select("handle", { count: "exact", head: true });
-  const write = await db.from("profiles").upsert(
+  const spec = await fetch(new URL(url).origin + "/rest/v1/", {
+    headers: { apikey: key, Authorization: `Bearer ${key}` },
+  })
+    .then((r) => r.json())
+    .catch(() => null);
+  const cols = (t: string) =>
+    Object.keys(spec?.definitions?.[t]?.properties ?? {}).join(", ") || null;
+
+  const read = await db.from("leaderboard").select("handle", { count: "exact", head: true });
+  const write = await db.from("leaderboard").upsert(
     { handle: "__probe__", display_handle: "__probe__", fill_pct: 0,
       active_days: 0, total_days: 1, contributions: 0, streak: 0,
       updated_at: new Date().toISOString() },
     { onConflict: "handle" },
   );
-  if (!write.error) await db.from("profiles").delete().eq("handle", "__probe__");
+  if (!write.error) await db.from("leaderboard").delete().eq("handle", "__probe__");
 
   return NextResponse.json({
     keyRole: keyRole(key),
     urlHost: new URL(url).hostname.split(".").slice(-2).join("."),
+    tables: { leaderboard: cols("leaderboard"), profiles: cols("profiles") },
     urlExtraPath: new URL(url).pathname + new URL(url).search,
     read: read.error ? { code: read.error.code, message: read.error.message } : { rows: read.count },
     write: write.error ? { code: write.error.code, message: write.error.message } : "ok",
