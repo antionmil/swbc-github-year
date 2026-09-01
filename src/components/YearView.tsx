@@ -71,7 +71,7 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
           saying something the numbers do not: the peak, and when the work
           actually happened. */}
       {d.total > 0 && (
-        <p className="mt-10 max-w-xl text-lg leading-relaxed text-pretty text-ink/75 sm:text-xl">
+        <p className="mt-10 text-lg leading-relaxed text-pretty text-ink/75 sm:text-xl">
           The busiest day carried {d.busiest.toLocaleString()} contribution
           {d.busiest === 1 ? "" : "s"}
           {d.weekendPct > 0 && <>, and {d.weekendPct}% of the year landed at weekends</>}

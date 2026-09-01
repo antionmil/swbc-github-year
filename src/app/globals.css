@@ -48,3 +48,18 @@ body { font-family: var(--font-body); }
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* HERO.
+   The word draws itself in once, then the two layers trade places on a slow
+   loop. This is the one place a loop is right — it is ambient, it carries no
+   text, and it is the page's only piece of art. */
+@keyframes hero-word { 0%, 38% { opacity: 1 } 50%, 88% { opacity: 0 } 100% { opacity: 1 } }
+@keyframes hero-year { 0%, 38% { opacity: 0 } 50%, 88% { opacity: 1 } 100% { opacity: 0 } }
+.hero-word { animation: hero-word 9s ease-in-out 1.6s infinite; }
+.hero-year { opacity: 0; animation: hero-year 9s ease-in-out 1.6s infinite; }
+
+/* Reduced motion keeps the word and drops the transition entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-word { animation: none; opacity: 1 }
+  .hero-year { animation: none; opacity: 0 }
+}
