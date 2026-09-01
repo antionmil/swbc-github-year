@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Board } from "@/components/Board";
+import { LiveBoard } from "@/components/LiveBoard";
 import { HeroGrid } from "@/components/HeroGrid";
 import { LiveCount } from "@/components/LiveCount";
 import { LookupForm } from "@/components/LookupForm";
@@ -40,7 +40,7 @@ export default async function Home() {
         </p>
       </section>
 
-      {leaderboardEnabled && <Board rows={rows} />}
+      {leaderboardEnabled && <LiveBoard initial={rows} />}
 
       <footer className="border-t border-rule pt-8 text-center text-xs text-muted">
         Built in a day ·{" "}

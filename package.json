@@ -1,6 +1,7 @@
 {
   "name": "github-year-in-commits",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.18.0",
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=2048 next dev",
@@ -27,5 +28,11 @@
     "tailwindcss": "^4.1.14",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
   }
 }
