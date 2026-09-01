@@ -1,3 +1,7 @@
+import "server-only";
+import { isValidLogin } from "./login";
+
+export { isValidLogin };
 /**
  * One GraphQL call, server-side token, any public username.
  *
@@ -52,7 +56,12 @@ export type YearData = {
 
 export class UnknownUser extends Error {}
 
+
+
 export async function fetchYear(login: string): Promise<YearData> {
+  // Reject before spending a call. Anything malformed cannot be a real user.
+  if (!isValidLogin(login)) throw new UnknownUser(login);
+
   const token = process.env.GITHUB_TOKEN;
   if (!token) throw new Error("GITHUB_TOKEN is not set.");
 

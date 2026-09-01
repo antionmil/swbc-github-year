@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Poster } from "@/components/Poster";
-import { fetchYear, UnknownUser } from "@/lib/github";
+import { fetchYear, isValidLogin, UnknownUser } from "@/lib/github";
 
-/* One hour of ISR. The username IS the cache key, so a popular handle is
-   served from the CDN and never touches GitHub again within the window.
-   That is also the whole rate-limit story: 5,000 points/hour, ~1 per query. */
 export const revalidate = 3600;
+
+function posterUrl(handle: string) {
+  return `/api/poster/${encodeURIComponent(handle)}`;
+}
 
 export async function generateMetadata({
   params,
@@ -15,9 +15,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { username } = await params;
   const handle = decodeURIComponent(username);
+  if (!isValidLogin(handle)) return { title: "Not found" };
+
+  const title = `@${handle} — A Year in Commits`;
+  const description = `A year of @${handle}'s public GitHub contributions, as a film poster.`;
+  /* The poster IS the share image. Without this a link unfurls as a black
+     rectangle, which for a site whose whole point is sharing is most of the
+     value gone. */
+  const images = [{ url: posterUrl(handle), width: 1000, height: 1500, alt: title }];
   return {
-    title: `@${handle} — A Year in Commits`,
-    description: `A year of @${handle}'s public GitHub contributions, as a film poster.`,
+    title,
+    description,
+    openGraph: { title, description, images, type: "website" },
+    twitter: { card: "summary_large_image", title, description, images },
   };
 }
 
@@ -29,21 +39,20 @@ export default async function UserPage({ params }: { params: Promise<{ username:
   try {
     data = await fetchYear(handle);
   } catch (e) {
-    /* An unknown username is not an error state — it is a normal thing a
-       visitor does. GraphQL returns user:null for it, and an error page there
-       reads as broken software rather than a typo. */
+    /* A typo is the most common thing a visitor does. It must not look like a
+       crash — and the upstream message never reaches them, since it can carry
+       rate-limit text or scope hints. */
     const unknown = e instanceof UnknownUser;
+    if (!unknown) console.error("[year] fetch failed for", handle, e);
     return (
       <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-5 px-6 text-center">
-        <h1 className="font-display text-4xl font-black">
+        <h1 className="font-display text-3xl font-black sm:text-4xl">
           {unknown ? `No public contributions for @${handle}` : "That did not work"}
         </h1>
         <p className="text-muted">
           {unknown
-            ? "GitHub has no public contribution data under that name. Check the spelling — it is case-insensitive but must be the username, not the display name."
-            : e instanceof Error
-              ? e.message
-              : "Something went wrong."}
+            ? "GitHub has no public contribution data under that name. Check the spelling — it is case-insensitive, and it needs the username rather than the display name."
+            : "Something went wrong on our side. Try again in a moment."}
         </p>
         <Link
           href="/"
@@ -55,24 +64,31 @@ export default async function UserPage({ params }: { params: Promise<{ username:
     );
   }
 
-  const empty = data.total === 0;
-
   return (
-    <main className="flex flex-col items-center gap-8 px-4 py-10">
-      <div className="w-full max-w-[1000px] origin-top scale-[0.34] sm:scale-[0.5] md:scale-[0.7] lg:scale-100">
-        <Poster d={data} />
-      </div>
+    <main className="mx-auto flex min-h-dvh max-w-[1000px] flex-col items-center gap-6 px-4 py-6 sm:px-6 sm:py-10">
+      {/* An <img> scales for real, unlike a CSS-transformed poster: the layout
+          box matches what is drawn, so there is no sideways scroll and no dead
+          space. On a phone it also gives tap-to-zoom and long-press-to-save. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={posterUrl(data.handle)}
+        alt={`@${data.handle}'s year in commits`}
+        width={1000}
+        height={1500}
+        className="h-auto w-full rounded-lg"
+      />
 
-      {empty && (
+      {data.total === 0 && (
         <p className="max-w-md text-center text-sm text-muted">
           @{data.handle} has no public contributions in the last year. The poster is
           real — it is just a quiet year.
         </p>
       )}
 
-      <div className="flex flex-col items-center gap-3 pb-10">
+      <div className="flex flex-col items-center gap-3 pb-8 text-center">
         <p className="text-sm text-muted">
-          Screenshot it, or share this link — it renders the same for anyone.
+          Long-press or right-click the poster to save it. This link shows the same
+          thing for anyone.
         </p>
         <Link
           href="/"
