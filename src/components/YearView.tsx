@@ -37,9 +37,28 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
   ];
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+    <main className="relative mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+      {/* A way out that does not need scrolling to the bottom. The footer link
+          is still there for anyone who reads to the end. */}
+      <Link
+        href="/"
+        aria-label="Back to the home page"
+        title="Back to the home page"
+        className="absolute top-8 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-rule text-muted transition-colors hover:border-accent hover:text-accent sm:right-6"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M15 5l-7 7 7 7"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </Link>
+
       <header className="flex flex-col gap-5">
-        <p className="text-[10px] font-bold tracking-[0.3em] text-muted uppercase">A year in commits</p>
+        <p className="pr-12 text-[10px] font-bold tracking-[0.3em] text-muted uppercase">A year in commits</p>
 
         {/* Identity, before any numbers. A username alone is easy to get wrong
             — there are near-identical ones — and a face plus a display name

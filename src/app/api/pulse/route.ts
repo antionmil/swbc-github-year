@@ -10,13 +10,15 @@ const OK = /^[0-9a-f-]{8,64}$/i;
 export async function POST(req: NextRequest) {
   if (!leaderboardEnabled) return NextResponse.json({});
 
-  const sid = (await req.json().catch(() => ({}))).sid;
+  const body = await req.json().catch(() => ({}));
+  const sid = body.sid;
+  const view = body.view === true;
   if (typeof sid !== "string" || !OK.test(sid)) {
     return NextResponse.json({ error: "bad id" }, { status: 400 });
   }
 
   try {
-    const { data, error } = await db().rpc("pulse", { s: sid });
+    const { data, error } = await db().rpc("pulse", { s: sid, v: view });
     if (error) {
       console.error("[pulse] failed", error.code, error.message);
       return NextResponse.json({});
