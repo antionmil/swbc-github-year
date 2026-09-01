@@ -28,9 +28,11 @@ query($login:String!, $from:DateTime!, $to:DateTime!) {
         repository { name  primaryLanguage { name } }
         contributions { totalCount }
       }
+      restrictedContributionsCount
+      hasAnyRestrictedContributions
       contributionCalendar {
         totalContributions
-        weeks { contributionDays { date  contributionCount } }
+        weeks { firstDay  contributionDays { date  contributionCount } }
       }
     }
   }
@@ -46,6 +48,14 @@ export type YearData = {
   totals: { commits: number; prs: number; issues: number; reviews: number; repos: number };
   topRepos: Repo[];
   calendar: number[][];
+  /** Month labels positioned by WEEK INDEX. The range is a rolling 12 months,
+   *  so hardcoding Jan-Dec described a calendar year the data never covered. */
+  months: { label: string; week: number }[];
+  /** Private contributions are a COUNT only - GitHub never tells a third party
+   *  which days they fell on, so they cannot be plotted. It reads 0 unless the
+   *  user has switched on private-contribution visibility on their profile. */
+  privateCount: number;
+  hasPrivate: boolean;
   /** derived below - nothing here needs a field the API does not return */
   total: number;
   activeDays: number;
@@ -99,10 +109,23 @@ export async function fetchYear(login: string): Promise<YearData> {
   if (!user) throw new UnknownUser(login);
 
   const c = user.contributionsCollection;
-  const weeks: number[][] = c.contributionCalendar.weeks.map(
-    (w: { contributionDays: { contributionCount: number }[] }) =>
-      w.contributionDays.map((d) => d.contributionCount),
-  );
+  type Week = { firstDay: string; contributionDays: { contributionCount: number }[] };
+  const rawWeeks: Week[] = c.contributionCalendar.weeks;
+  const weeks: number[][] = rawWeeks.map((w) => w.contributionDays.map((d) => d.contributionCount));
+
+  // A label at each week where the month changes — derived from the data, so
+  // the axis always matches the range actually fetched.
+  const MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const months: { label: string; week: number }[] = [];
+  let lastMonth = -1;
+  rawWeeks.forEach((w, i) => {
+    const m = new Date(w.firstDay + "T00:00:00Z").getUTCMonth();
+    if (m !== lastMonth) {
+      // skip a label in the final week - it would collide with the edge
+      if (i < rawWeeks.length - 1) months.push({ label: MONTH[m], week: i });
+      lastMonth = m;
+    }
+  });
   const flat = weeks.flat();
 
   let streak = 0;
@@ -135,6 +158,9 @@ export async function fetchYear(login: string): Promise<YearData> {
       }),
     ),
     calendar: weeks,
+    months,
+    privateCount: c.restrictedContributionsCount ?? 0,
+    hasPrivate: Boolean(c.hasAnyRestrictedContributions),
     total,
     activeDays: flat.filter((n) => n > 0).length,
     busiest: Math.max(0, ...flat),

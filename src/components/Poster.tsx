@@ -15,7 +15,6 @@ import type { YearData } from "@/lib/github";
  */
 
 const LEVELS = ["#16171a", "#3d3320", "#6b5522", "#a37c21", "#e8b23c"];
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const BONE = "#ece6da";
 const DIM = "#8b8578";
@@ -34,6 +33,14 @@ function titleSize(handle: string) {
   if (n <= 18) return 70;
   if (n <= 24) return 54;
   return 42;
+}
+
+const MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+/** "2025 — 2026" alongside a Jan-Dec axis read as a calendar year, which the
+ *  data never was. Naming the months removes the contradiction. */
+function monthYear(iso: string) {
+  const d = new Date(iso + "T00:00:00Z");
+  return `${MONTH_ABBR[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 function level(n: number, max: number) {
@@ -114,10 +121,21 @@ export function Poster({ d }: { d: YearData }) {
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", flexDirection: "row", width: 848, marginTop: 14 }}>
-          {MONTHS.map((m) => (
-            <div key={m} style={{ display: "flex", flexGrow: 1, ...label(12, 2.4) }}>
-              {m}
+        {/* Labels sit at the week where the month actually changes. Hardcoded
+            Jan-Dec described a calendar year the data never covered — the range
+            is a rolling 12 months. */}
+        <div style={{ display: "flex", flexDirection: "row", width: 848, marginTop: 14, position: "relative", height: 16 }}>
+          {d.months.map((m) => (
+            <div
+              key={`${m.label}-${m.week}`}
+              style={{
+                display: "flex",
+                position: "absolute",
+                left: m.week * 16,
+                ...label(12, 2.4),
+              }}
+            >
+              {m.label}
             </div>
           ))}
         </div>
@@ -151,7 +169,7 @@ export function Poster({ d }: { d: YearData }) {
             fontFamily: DISPLAY,
           }}
         >
-          {d.from.slice(0, 4)} — {d.to.slice(0, 4)}
+          {monthYear(d.from)} — {monthYear(d.to)}
         </div>
         <div
           style={{
@@ -169,6 +187,7 @@ export function Poster({ d }: { d: YearData }) {
         >
           {d.total.toLocaleString()} contributions across {d.activeDays} days.
           {d.streak > 1 ? ` The longest unbroken run was ${d.streak}.` : ""}
+          {d.hasPrivate ? ` Plus ${d.privateCount.toLocaleString()} in private.` : ""}
         </div>
       </div>
 
