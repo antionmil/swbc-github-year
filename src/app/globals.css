@@ -38,3 +38,13 @@ body { font-family: var(--font-body); }
 @media (prefers-reduced-motion: reduce) {
   .cascade > * > *, .rise { opacity: 1; animation: none; transform: none; }
 }
+
+/* Every control gets a visible focus ring. `:where` keeps specificity at zero,
+   so a component can still override it. Without this a keyboard user cannot
+   tell what is selected — the browser default outline is invisible on a dark
+   background. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
