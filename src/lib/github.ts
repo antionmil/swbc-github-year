@@ -32,7 +32,7 @@ const FIELDS = `
 /* One query, on the app token: exactly what a stranger can see. There is no
    sign-in, so there is no path by which this site sees more than that. */
 const QUERY = `query($login:String!, $from:DateTime!, $to:DateTime!) {
-  user(login:$login) { login name avatarUrl contributionsCollection(from:$from, to:$to) { ${FIELDS} } }
+  user(login:$login) { login name avatarUrl bio followers { totalCount } contributionsCollection(from:$from, to:$to) { ${FIELDS} } }
 }`;
 
 export type Repo = { name: string; language: string | null; commits: number };
@@ -40,6 +40,10 @@ export type YearData = {
   handle: string;
   name: string | null;
   avatar: string | null;
+  /** Shown so a visitor can tell at a glance whether this is the right
+   *  account — a display name and a face settle it faster than a username. */
+  bio: string | null;
+  followers: number;
   from: string;
   to: string;
   totals: { commits: number; prs: number; issues: number; reviews: number; repos: number };
@@ -100,6 +104,8 @@ type RawUser = {
   login: string;
   name: string | null;
   avatarUrl: string | null;
+  bio: string | null;
+  followers: { totalCount: number } | null;
   contributionsCollection: Record<string, never> & Record<string, unknown>;
 };
 
@@ -152,6 +158,8 @@ function shape(user: RawUser, from: Date, to: Date): YearData {
     handle: user.login,
     name: user.name,
     avatar: user.avatarUrl ?? null,
+    bio: user.bio ?? null,
+    followers: user.followers?.totalCount ?? 0,
     from: from.toISOString().slice(0, 10),
     to: to.toISOString().slice(0, 10),
     totals: {

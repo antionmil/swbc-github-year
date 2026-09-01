@@ -37,9 +37,39 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
-      <header className="flex flex-col gap-3">
+      <header className="flex flex-col gap-5">
         <p className="text-[10px] font-bold tracking-[0.3em] text-muted uppercase">A year in commits</p>
-        <h1 className="font-display text-4xl font-black break-words sm:text-6xl">@{d.handle}</h1>
+
+        {/* Identity, before any numbers. A username alone is easy to get wrong
+            — there are near-identical ones — and a face plus a display name
+            settles "is this actually me" in a glance. */}
+        <div className="flex items-center gap-4">
+          {d.avatar && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={d.avatar}
+              alt=""
+              width={64}
+              height={64}
+              className="h-14 w-14 shrink-0 rounded-full border border-rule sm:h-16 sm:w-16"
+            />
+          )}
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <h1 className="font-display text-3xl leading-none font-bold break-words sm:text-5xl">
+              @{d.handle}
+            </h1>
+            <p className="flex flex-wrap items-baseline gap-x-2 text-sm text-muted">
+              {d.name && <span className="text-ink">{d.name}</span>}
+              {d.name && <span aria-hidden>·</span>}
+              <span className="tabular-nums">
+                {d.followers.toLocaleString()} follower{d.followers === 1 ? "" : "s"}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {d.bio && <p className="max-w-prose text-pretty text-muted">{d.bio}</p>}
+
         {/* The range is a rolling 12 months. Naming the months removes the
             contradiction with the old "2025 — 2026" over a Jan–Dec axis. */}
         <p className="text-sm tracking-[0.18em] text-muted uppercase">
