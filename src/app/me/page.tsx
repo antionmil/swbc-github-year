@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SignInPanel } from "@/components/SignInPanel";
 import { YearView } from "@/components/YearView";
 import { fetchViewerYear } from "@/lib/github";
 import { fillPct, rankOf, record } from "@/lib/leaderboard";
@@ -9,30 +10,14 @@ import { clearSession, getSession } from "@/lib/session";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Your year", robots: { index: false } };
 
-function SignIn({ why }: { why: string }) {
-  return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="font-display text-4xl font-black">Your year, counted properly</h1>
-      <p className="text-muted">{why}</p>
-      <a
-        href="/api/auth/login"
-        className="rounded-full bg-accent px-8 py-4 text-sm font-bold tracking-[0.14em] text-ground uppercase"
-      >
-        Sign in with GitHub
-      </a>
-      <p className="max-w-sm text-xs text-muted">
-        Read-only access to your profile. No repository access, nothing is written to your
-        account, and you can remove yourself in one click afterwards.
-      </p>
-    </main>
-  );
-}
-
 export default async function Me() {
   const s = await getSession();
   if (!s) {
     return (
-      <SignIn why="Signing in counts your private contributions on the days they happened, and puts you on the leaderboard. Looking up a username never does either." />
+      <SignInPanel
+        heading="Your year, counted properly"
+        why="Signing in counts your private contributions on the days they happened, and puts you on the leaderboard. Looking up a username never does either."
+      />
     );
   }
 
@@ -44,7 +29,7 @@ export default async function Me() {
     // rather than showing an error the visitor cannot act on.
     console.error("[me] viewer fetch failed", e);
     await clearSession();
-    return <SignIn why="That sign-in has expired. Signing in again takes a moment." />;
+    return <SignInPanel heading="Signed out" why="That sign-in has expired. Signing in again takes a moment." />;
   }
 
   /* This is the ONLY write path for a person's own row, and it runs on every
