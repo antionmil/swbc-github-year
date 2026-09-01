@@ -23,9 +23,13 @@ function Stat({ n, k }: { n: string | number; k: string }) {
 /** One presentation, two routes: the cached public page and the signed-in
  *  `/me`. `slot` is the only thing that differs — the leaderboard card. */
 export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
+  /* Exactly four, always. The list used to grow to five when someone had pull
+     requests and shrink to four when they did not, so a three-column grid left
+     one tile stranded on a row of its own. Four fills 2x2 on a phone and one
+     clean row on a desktop, whoever it is. Pull requests moved into the
+     sentence below, where a varying count costs nothing. */
   const stats: [string | number, string][] = [
     [d.totals.commits.toLocaleString(), "Commits"],
-    ...(d.totals.prs ? ([[d.totals.prs, "Pull requests"]] as [string | number, string][]) : []),
     [d.activeDays, "Active days"],
     [d.streak, "Longest streak"],
     [d.totals.repos, "Repositories"],
@@ -54,7 +58,7 @@ export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
         )}
       </section>
 
-      <section className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3">
+      <section className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
         {stats.map(([n, k]) => (
           <Stat key={k} n={n} k={k} />
         ))}
@@ -62,9 +66,14 @@ export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
 
       {slot}
 
-      <p className="font-display mt-10 text-xl leading-snug text-ink/80 italic sm:text-2xl">
-        {d.total.toLocaleString()} contributions across {d.activeDays} days.
-        {d.streak > 1 ? ` The longest unbroken run was ${d.streak}.` : ""}
+      {/* text-pretty stops the last word landing alone on its own line — the
+          orphaned "5." was exactly that. */}
+      <p className="mt-10 text-xl leading-relaxed text-balance text-ink/80 sm:text-2xl">
+        <span className="text-pretty">
+          {d.total.toLocaleString()} contributions across {d.activeDays} days
+          {d.totals.prs ? `, ${d.totals.prs} pull requests` : ""}
+          {d.streak > 1 ? `, and a longest unbroken run of ${d.streak}` : ""}.
+        </span>
       </p>
 
       {d.topRepos.length > 0 && (

@@ -8,7 +8,7 @@ const day = (iso: string | null) =>
       })
     : null;
 
-export function Board({ rows }: { rows: Row[] }) {
+export function Board({ rows, highlight }: { rows: Row[]; highlight?: string }) {
   return (
     <section id="leaderboard" className="flex flex-col gap-5 scroll-mt-8">
       <header className="flex flex-col gap-2">
@@ -24,15 +24,26 @@ export function Board({ rows }: { rows: Row[] }) {
         <p className="text-sm text-muted">Nobody yet. The first username entered starts the list.</p>
       ) : (
         <ol className="flex flex-col">
-          {rows.map((r, i) => (
-            <li key={r.handle}>
+          {rows.map((r, i) => {
+            const mine = highlight?.toLowerCase() === r.handle.toLowerCase();
+            return (
+            <li key={r.handle} className="rise" style={{ animationDelay: `${Math.min(i, 12) * 0.045}s` }}>
               <Link
                 href={`/${r.handle}`}
-                className="flex flex-col gap-0.5 border-b border-rule py-3 transition-colors hover:border-accent"
+                className={`flex flex-col gap-0.5 border-b py-3 transition-colors hover:border-accent ${
+                  mine ? "-mx-3 rounded-lg border-accent/40 bg-accent/[0.07] px-3" : "border-rule"
+                }`}
               >
                 <div className="flex items-baseline gap-3 sm:gap-5">
                   <span className="w-6 shrink-0 text-sm text-muted tabular-nums">{i + 1}</span>
-                  <span className="min-w-0 flex-1 truncate text-base sm:text-lg">{r.handle}</span>
+                  <span className="min-w-0 flex-1 truncate text-base sm:text-lg">
+                    {r.handle}
+                    {mine && (
+                      <span className="ml-2 align-middle text-[10px] tracking-[0.16em] text-accent uppercase">
+                        you
+                      </span>
+                    )}
+                  </span>
                   <span className="font-display shrink-0 text-base font-bold text-accent tabular-nums sm:text-lg">
                     {r.fill_pct}%
                   </span>
@@ -48,7 +59,8 @@ export function Board({ rows }: { rows: Row[] }) {
                 </div>
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ol>
       )}
     </section>

@@ -2,12 +2,12 @@ import { Board } from "@/components/Board";
 import { Grid } from "@/components/Grid";
 import { LookupForm } from "@/components/LookupForm";
 import { fetchYear, type YearData } from "@/lib/github";
-import { fillPct, leaderboardEnabled, top } from "@/lib/leaderboard";
+import { fillPct, leaderboardEnabled, topCached } from "@/lib/leaderboard";
 
-/* Dynamic, because the board is on this page now and a visitor arrives here
-   straight after being added to it. The GitHub call for the hero is still
-   cached for an hour by the fetch cache, so this costs one indexed query. */
-export const dynamic = "force-dynamic";
+/* ISR, not dynamic. The board read goes through `topCached`, so no uncached
+   fetch happens during render and this page can actually be served from the
+   edge — which is what took TTFB from about a second down. */
+export const revalidate = 30;
 
 /* The hero has one job: show what a full year looks like before anyone types.
    A sparse grid does the opposite — it makes the product look empty. */
@@ -28,7 +28,7 @@ async function featured(leader?: string): Promise<YearData | null> {
 }
 
 export default async function Home() {
-  const rows = leaderboardEnabled ? await top(100) : [];
+  const rows = leaderboardEnabled ? await topCached() : [];
   const best = rows[0] && rows[0].fill_pct >= FULL_ENOUGH ? rows[0].handle : undefined;
   const d = await featured(best);
 
@@ -37,11 +37,7 @@ export default async function Home() {
       <section className="flex flex-col gap-9">
         {d && (
           <div className="flex flex-col items-center gap-3">
-            <div className="no-bar w-full overflow-x-auto">
-              <div className="mx-auto w-fit">
-                <Grid d={d} cell={5} gap={2} months={false} cascade />
-              </div>
-            </div>
+            <Grid d={d} gap={2} months={false} cascade />
             {/* Deliberately NOT a link. Clicking it would open /@handle, and
                 that page records — so a decorative hero would quietly seed the
                 board with names nobody typed. */}
@@ -56,7 +52,7 @@ export default async function Home() {
             A Year in Commits
           </h1>
           <p className="rise rise-2 text-base text-muted sm:text-lg">
-            Any username. One year. As a poster.
+            Any username. One year at a glance.
           </p>
         </header>
 

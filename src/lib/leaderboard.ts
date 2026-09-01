@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import type { YearData } from "./github";
 
@@ -117,30 +118,29 @@ export async function top(limit = 100): Promise<Row[]> {
   }
 }
 
-/** Rank plus field size, for the line on someone's own page. */
-export async function rankOf(handle: string): Promise<{ rank: number; of: number } | null> {
-  if (!leaderboardEnabled) return null;
-  try {
-    const c = db();
-    const [all, mine] = await Promise.all([
-      c.from("leaderboard").select("handle", { count: "exact", head: true }),
-      c.from("leaderboard").select("fill_pct").eq("handle", handle.toLowerCase()).maybeSingle(),
-    ]);
-    if (fail("rank count", all.error) || fail("rank self", mine.error)) return null;
-    if (!mine.data) return null;
-    const { count: better, error } = await c
-      .from("leaderboard")
-      .select("handle", { count: "exact", head: true })
-      .gt("fill_pct", mine.data.fill_pct);
-    if (fail("rank better", error)) return null;
-    return { rank: (better ?? 0) + 1, of: all.count ?? 0 };
-  } catch (e) {
-    console.error("[leaderboard] rank failed", e);
-    return null;
-  }
+/** Rank and field size, derived from rows ALREADY fetched.
+ *  This used to be three more round trips to Postgres (count, self, better).
+ *  The board is at most a hundred rows and the page renders it anyway, so
+ *  computing here costs nothing and removes three transatlantic hops. */
+export function rankIn(rows: Row[], handle: string) {
+  const i = rows.findIndex((r) => r.handle.toLowerCase() === handle.toLowerCase());
+  return i < 0 ? null : { rank: i + 1, of: rows.length };
 }
 
 export async function removeHandle(handle: string): Promise<void> {
   if (!leaderboardEnabled) return;
   await db().from("leaderboard").delete().eq("handle", handle.toLowerCase());
 }
+
+/** The home page's copy of the board.
+ *
+ *  Supabase is reached with an uncached fetch, and ONE of those during render
+ *  opts the whole route out of static rendering — which is why every page was
+ *  coming back `x-vercel-cache: MISS` with `no-store`. Wrapping the read makes
+ *  the home page cacheable again. Thirty seconds is short enough that a new
+ *  entry shows up almost immediately, and the person who just joined sees
+ *  their own placement on their own page, live, either way.
+ */
+export const topCached = unstable_cache(async () => top(100), ["board-top"], {
+  revalidate: 30,
+});

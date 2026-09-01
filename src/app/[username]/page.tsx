@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { YearView, posterUrl } from "@/components/YearView";
 import { fetchYear, isValidLogin, UnknownUser, type YearData } from "@/lib/github";
-import { fillPct, leaderboardEnabled, rankOf, record } from "@/lib/leaderboard";
+import { RankReveal } from "@/components/RankReveal";
+import { fillPct, leaderboardEnabled } from "@/lib/leaderboard";
 
-/* Cached and PUBLIC. This page never reads a cookie: doing so would make every
-   username dynamic and cost a GitHub call per view. The signed-in view lives
-   at /me, where it can be dynamic without dragging the cached pages with it. */
+/* Cached and PUBLIC — genuinely, now. It previously declared `revalidate` and
+   then wrote to Postgres during render, and a single uncached fetch opts the
+   whole route out of static rendering. Every request came back
+   `x-vercel-cache: MISS` with `no-store`. The recording moved to /api/seen. */
 export const revalidate = 3600;
 
 export async function generateMetadata({
@@ -61,27 +63,10 @@ export default async function UserPage({ params }: { params: Promise<{ username:
     );
   }
 
-  /* The page is ISR-cached for an hour, so this runs at most once per username
-     per hour however much traffic arrives. */
-  await record(d);
-  const rank = leaderboardEnabled ? await rankOf(d.handle) : null;
-
   return (
     <YearView
       d={d}
-      slot={
-        leaderboardEnabled && (
-          <div className="mt-10 flex flex-wrap items-baseline gap-x-3 gap-y-2 rounded-xl border border-rule bg-surface px-5 py-4">
-            <span className="font-display text-2xl font-bold text-accent">{fillPct(d)}%</span>
-            <span className="text-sm text-muted">of the calendar filled</span>
-            {rank && (
-              <Link href="/#leaderboard" className="ml-auto text-sm text-muted hover:text-accent">
-                <span className="text-ink">#{rank.rank}</span> of {rank.of}
-              </Link>
-            )}
-          </div>
-        )
-      }
+      slot={leaderboardEnabled && <RankReveal handle={d.handle} fill={fillPct(d)} />}
     />
   );
 }

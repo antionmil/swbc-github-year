@@ -9,69 +9,67 @@ function level(n: number, max: number) {
 }
 
 /**
- * The contribution grid, for the WEB page.
+ * The contribution grid.
  *
- * 53 weeks will never fit legibly across a phone, and shrinking the cells to
- * 4px makes a smear rather than a graph. So the grid keeps readable cells and
- * scrolls sideways inside its own container — the same thing GitHub does, and
- * the reason the page itself never has to scroll.
+ * It uses CSS grid with `1fr` columns and square cells rather than fixed
+ * pixel sizes. Fixed sizes meant 53 weeks could not fit a phone, so the whole
+ * thing sat in a horizontal scroller — and that scroller drew a grey bar
+ * straight across the artwork. Sizing by fraction removes the overflow
+ * entirely: the cells shrink to whatever width there is, on any screen, with
+ * nothing to scroll and no bar to hide.
  */
 export function Grid({
   d,
-  cell = 12,
-  gap = 3,
+  gap = 2,
   months = true,
   cascade = false,
 }: {
   d: YearData;
-  cell?: number;
   gap?: number;
   months?: boolean;
   /** Draw the year in, week by week, once on load. */
   cascade?: boolean;
 }) {
   const max = Math.max(1, ...d.calendar.flat());
-  const CELL = cell;
-  const GAP = gap;
-  const step = CELL + GAP;
+  const weeks = d.calendar.length;
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <div style={{ width: d.calendar.length * step }}>
-        {months && (
-        <div className="relative mb-1.5 h-4">
+    <div className="w-full">
+      {months && (
+        <div className="relative mb-1.5 h-3.5">
           {d.months.map((m) => (
             <span
               key={`${m.label}-${m.week}`}
-              className="absolute text-[10px] tracking-[0.18em] text-muted uppercase"
-              style={{ left: m.week * step }}
+              className="absolute top-0 text-[9px] tracking-[0.14em] text-muted uppercase sm:text-[10px]"
+              style={{ left: `${(m.week / weeks) * 100}%` }}
             >
               {m.label}
             </span>
           ))}
         </div>
-        )}
-        <div className={`flex ${cascade ? "cascade" : ""}`} style={{ gap: GAP }}>
-          {d.calendar.map((week, i) => (
-            <div key={i} className="flex flex-col" style={{ gap: GAP }}>
-              {week.map((n, j) => (
-                <div
-                  key={j}
-                  title={`${n} contribution${n === 1 ? "" : "s"}`}
-                  style={{
-                    width: CELL,
-                    height: CELL,
-                    borderRadius: 2,
-                    background: LEVELS[level(n, max)],
-                    // Stagger by WEEK, not by cell: the year should read as
-                    // sweeping left to right, not as 366 unrelated pops.
-                    ...(cascade ? { animationDelay: `${i * 0.018}s` } : {}),
-                  }}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
+      )}
+      <div
+        className={cascade ? "cascade grid" : "grid"}
+        style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)`, gap }}
+      >
+        {d.calendar.map((week, i) => (
+          <div key={i} className="grid" style={{ gridTemplateRows: "repeat(7, 1fr)", gap }}>
+            {week.map((n, j) => (
+              <div
+                key={j}
+                title={`${n} contribution${n === 1 ? "" : "s"}`}
+                style={{
+                  aspectRatio: "1",
+                  borderRadius: 2,
+                  background: LEVELS[level(n, max)],
+                  // Stagger by WEEK, not by cell: the year should read as
+                  // sweeping left to right, not as 366 unrelated pops.
+                  ...(cascade ? { animationDelay: `${i * 0.018}s` } : {}),
+                }}
+              />
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );
