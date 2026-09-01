@@ -68,8 +68,9 @@ export default async function Home() {
           Or see the fullest years
         </Link>
         <p className="max-w-sm text-center text-xs leading-relaxed text-muted">
-          Public contribution data, the same GitHub shows on a profile. No sign-in,
-          nothing stored about you. Not affiliated with GitHub.
+          Public contribution data, the same GitHub shows on a profile. No sign-in.
+          A name you look up joins the leaderboard, which says how to come off it.
+          Not affiliated with GitHub.
         </p>
       </div>
     </main>
