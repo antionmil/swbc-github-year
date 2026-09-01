@@ -74,6 +74,16 @@ export async function fetchYear(login: string): Promise<YearData> {
 
   if (!res.ok) throw new Error(`GitHub returned ${res.status}`);
   const json = await res.json();
+
+  /* An unknown username comes back as BOTH data.user:null AND an errors array
+     carrying type NOT_FOUND. Checking errors first threw the generic error and
+     the friendly "no public contributions" state was unreachable in production.
+     A typo is the most common thing a visitor does - it must not look like a
+     crash. */
+  const notFound = (json.errors ?? []).some(
+    (e: { type?: string }) => e.type === "NOT_FOUND",
+  );
+  if (notFound) throw new UnknownUser(login);
   if (json.errors?.length) throw new Error(json.errors[0].message);
 
   const user = json.data?.user;
