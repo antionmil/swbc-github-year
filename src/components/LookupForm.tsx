@@ -39,7 +39,7 @@ export function LookupForm() {
           disabled={busy || !login.trim()}
           className="rounded-full bg-accent px-8 py-4 text-sm font-bold tracking-[0.14em] text-ground uppercase disabled:opacity-30"
         >
-          {busy ? "Rolling…" : "Roll credits"}
+          {busy ? "Reading…" : "See the year"}
         </button>
       </form>
       {err && <p className="text-center text-sm text-accent">{err}</p>}
