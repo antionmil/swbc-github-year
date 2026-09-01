@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
 
   /* The site takes no input beyond a username, sets no cookies and stores
      nothing — but these cost nothing and close the obvious gaps. */
+  /* The board moved onto the home page. Without this, /leaderboard falls
+     through to [username] and renders "No public contributions for
+     @leaderboard", which is worse than a 404. */
+  async redirects() {
+    return [{ source: "/leaderboard", destination: "/#leaderboard", permanent: true }];
+  },
   async headers() {
     return [
       {
