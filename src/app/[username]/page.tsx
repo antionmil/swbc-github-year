@@ -52,8 +52,16 @@ export default async function UserPage({ params }: { params: Promise<{ username:
   try {
     d = await fetchYear(handle);
   } catch (e) {
-    const unknown = e instanceof UnknownUser;
-    if (!unknown) console.error("[year] fetch failed for", handle, e);
+    /* A genuinely unknown username renders the friendly page, and caching that
+       for an hour is right — the name will still be unknown in an hour.
+       Anything ELSE (a GitHub blip, a rate limit) must be re-thrown: rendering
+       a page here would cache the failure, so one bad second would show "no
+       public contributions" for a real person for the next sixty minutes. */
+    if (!(e instanceof UnknownUser)) {
+      console.error("[year] fetch failed for", handle, e);
+      throw e;
+    }
+    const unknown = true;
     return (
       <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-5 px-6 text-center">
         <h1 className="font-display text-3xl font-black sm:text-4xl">
