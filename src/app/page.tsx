@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Board } from "@/components/Board";
 import { Grid } from "@/components/Grid";
 import { LookupForm } from "@/components/LookupForm";
@@ -43,11 +42,11 @@ export default async function Home() {
                 <Grid d={d} cell={5} gap={2} months={false} cascade />
               </div>
             </div>
+            {/* Deliberately NOT a link. Clicking it would open /@handle, and
+                that page records — so a decorative hero would quietly seed the
+                board with names nobody typed. */}
             <p className="rise rise-3 text-center text-[11px] tracking-[0.14em] text-muted uppercase">
-              One year of{" "}
-              <Link href={`/${d.handle}`} className="text-ink underline-offset-4 hover:text-accent">
-                @{d.handle}
-              </Link>
+              One year of <span className="text-ink">@{d.handle}</span>
             </p>
           </div>
         )}
