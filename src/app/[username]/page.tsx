@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Grid } from "@/components/Grid";
 import { fetchYear, isValidLogin, UnknownUser, type YearData } from "@/lib/github";
+import { fillPct, leaderboardEnabled, rankOf, record } from "@/lib/leaderboard";
 
 export const revalidate = 3600;
 
@@ -74,6 +75,12 @@ export default async function UserPage({ params }: { params: Promise<{ username:
     );
   }
 
+  /* Recording happens on a successful lookup only, and the page is ISR-cached
+     for an hour, so this runs at most once per username per hour. */
+  await record(d);
+  const rank = await rankOf(d.handle);
+  const fill = fillPct(d);
+
   const stats: [string | number, string][] = [
     [d.totals.commits.toLocaleString(), "Commits"],
     ...(d.totals.prs ? ([[d.totals.prs, "Pull requests"]] as [string | number, string][]) : []),
@@ -112,6 +119,21 @@ export default async function UserPage({ params }: { params: Promise<{ username:
           <Stat key={k} n={n} k={k} />
         ))}
       </section>
+
+      {leaderboardEnabled && (
+        <Link
+          href="/leaderboard"
+          className="mt-10 flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-xl border border-rule bg-surface px-5 py-4 hover:border-accent"
+        >
+          <span className="font-display text-2xl font-bold text-accent">{fill}%</span>
+          <span className="text-sm text-muted">of the calendar filled</span>
+          {rank && (
+            <span className="ml-auto text-sm text-muted">
+              <span className="text-ink">#{rank.rank}</span> of {rank.of}
+            </span>
+          )}
+        </Link>
+      )}
 
       <p className="font-display mt-10 text-xl leading-snug text-ink/80 italic sm:text-2xl">
         {d.total.toLocaleString()} contributions across {d.activeDays} days.

@@ -52,9 +52,16 @@ export default function Home() {
 
       {err && <p className="text-center text-sm text-accent">{err}</p>}
 
+      <a
+        href="/leaderboard"
+        className="text-center text-xs tracking-[0.18em] text-muted uppercase underline-offset-4 hover:text-accent"
+      >
+        Or see who has filled the most of their year
+      </a>
+
       <p className="text-center text-sm text-muted">
-        Public contributions only — the same data GitHub shows on a profile.
-        Nothing is stored and no sign-in is needed. Not affiliated with GitHub.
+        Public contributions only — the same data GitHub shows on a profile. No
+        sign-in needed. Not affiliated with GitHub.
       </p>
     </main>
   );
