@@ -1,7 +1,10 @@
 node_modules
 .next
-.env
-.env.local
+# Every env file, however it is named — `.env` and `.env.local` alone missed
+# `.env.production` and `.env.*.local`, which is exactly the kind of file that
+# gets created in a hurry and committed by accident.
+.env*
+!.env.example
 .vercel
 *.tsbuildinfo
 next-env.d.ts
