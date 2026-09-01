@@ -21,30 +21,38 @@ export const revalidate = 3600;
  * so we pretend to be an old browser to get a TTF. Solved once in the scaffold;
  * same helper here.
  */
-const FONTS: Record<string, string> = {
-  Display: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap",
-  Body: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&display=swap",
-};
+/* ONE request for both weights. The site settled on a single family, so
+   asking Google twice — once for 700, once for 400 — was two round trips for
+   two faces of the same font, on every cold start. */
+const FONT_CSS =
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap";
 
-const cache = new Map<string, ArrayBuffer>();
+let cache: Promise<Map<number, ArrayBuffer>> | null = null;
 
-async function font(name: string): Promise<ArrayBuffer | null> {
-  const hit = cache.get(name);
-  if (hit) return hit;
-  try {
-    const css = await (
-      await fetch(FONTS[name], {
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; OneDayBuilt/1.0)" },
-      })
-    ).text();
-    const url = css.match(/src:\s*url\(([^)]+)\)/)?.[1];
-    if (!url) return null;
-    const buf = await (await fetch(url)).arrayBuffer();
-    cache.set(name, buf);
-    return buf;
-  } catch {
-    return null; // a font failure must never take down the image
+async function fonts(): Promise<Map<number, ArrayBuffer>> {
+  if (!cache) {
+    cache = (async () => {
+      const out = new Map<number, ArrayBuffer>();
+      try {
+        const css = await (
+          await fetch(FONT_CSS, {
+            headers: { "User-Agent": "Mozilla/5.0 (compatible; OneDayBuilt/1.0)" },
+          })
+        ).text();
+        // One @font-face block per weight; pair each weight with its own url.
+        const faces = [...css.matchAll(/font-weight:\s*(\d+);[\s\S]*?src:\s*url\(([^)]+)\)/g)];
+        await Promise.all(
+          faces.map(async ([, w, url]) => {
+            out.set(Number(w), await (await fetch(url)).arrayBuffer());
+          }),
+        );
+      } catch {
+        // A font failure must never take down the image.
+      }
+      return out;
+    })();
   }
+  return cache;
 }
 
 export async function GET(_req: Request, { params }: { params: Promise<{ username: string }> }) {
@@ -62,7 +70,9 @@ export async function GET(_req: Request, { params }: { params: Promise<{ usernam
     return new Response("Not found", { status: 404 });
   }
 
-  const [display, body] = await Promise.all([font("Display"), font("Body")]);
+  const faces = await fonts();
+  const display = faces.get(700);
+  const body = faces.get(400);
 
   return new ImageResponse(<Poster d={data} />, {
     width: 1000,

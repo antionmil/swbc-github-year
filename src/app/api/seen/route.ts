@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { fetchYear, isValidLogin, UnknownUser } from "@/lib/github";
 import { fillPct, leaderboardEnabled, rankIn, record, top } from "@/lib/leaderboard";
+import { allow } from "@/lib/ratelimit";
 
 /** Recording moved OFF the render path.
  *
@@ -13,6 +14,14 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   if (!leaderboardEnabled) return NextResponse.json({ rows: [], rank: null });
+
+  /* x-forwarded-for is client-supplied in general, but on Vercel the platform
+     sets it and the leftmost entry is the real peer. Good enough to stop a
+     loop; not a security boundary, and not treated as one. */
+  const ip = (req.headers.get("x-forwarded-for") ?? "unknown").split(",")[0].trim();
+  if (!allow(ip)) {
+    return NextResponse.json({ error: "slow down" }, { status: 429 });
+  }
 
   const handle = (await req.json().catch(() => ({}))).handle;
   if (typeof handle !== "string" || !isValidLogin(handle)) {
