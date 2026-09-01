@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Grid } from "@/components/Grid";
+import { archetype } from "@/lib/archetype";
 import { displayHandle, isClean } from "@/lib/clean";
 import type { YearData } from "@/lib/github";
 
@@ -24,6 +25,7 @@ function Stat({ n, k }: { n: string | number; k: string }) {
 /** One presentation, two routes: the cached public page and the signed-in
  *  `/me`. `slot` is the only thing that differs — the leaderboard card. */
 export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; after?: ReactNode }) {
+  const type = archetype(d);
   /* Exactly four, always. The list used to grow to five when someone had pull
      requests and shrink to four when they did not, so a three-column grid left
      one tile stranded on a row of its own. Four fills 2x2 on a phone and one
@@ -110,6 +112,16 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
             cannot be plotted.
           </p>
         )}
+      </section>
+
+      {/* The verdict, before the numbers that produced it. This is the line
+          people screenshot — a name for the shape of a year, where the tiles
+          below are only the working. */}
+      <section className="mt-10 flex flex-col gap-2 border-l-2 border-accent pl-5">
+        <h2 className="font-display text-3xl leading-tight font-bold text-balance sm:text-4xl">
+          {type.name}
+        </h2>
+        <p className="max-w-prose text-pretty text-muted">{type.line}</p>
       </section>
 
       <section className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">

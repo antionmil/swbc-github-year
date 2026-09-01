@@ -1,3 +1,4 @@
+import { archetype } from "@/lib/archetype";
 import { displayHandle, isClean } from "@/lib/clean";
 import type { YearData } from "@/lib/github";
 
@@ -60,6 +61,7 @@ const label = (size: number, tracking: number, color = DIM) =>
   }) as const;
 
 export function Poster({ d }: { d: YearData }) {
+  const type = archetype(d);
   const flat = d.calendar.flat();
   const max = Math.max(1, ...flat);
   const repos = d.topRepos.filter((r) => isClean(r.name));

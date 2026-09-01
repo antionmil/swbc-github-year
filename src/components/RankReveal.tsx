@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Board } from "@/components/Board";
-import { displayHandle } from "@/lib/clean";
+import { placing } from "@/lib/archetype";
 import Link from "next/link";
 import type { Row } from "@/lib/leaderboard";
 
@@ -74,9 +73,7 @@ export function RankReveal({ handle, fill }: { handle: string; fill: number }) {
           card does not jump when the number arrives. */}
       <span className="ml-auto text-sm text-muted tabular-nums">
         {data?.rank ? (
-          <span className="rise">
-            <span className="text-ink">#{data.rank.rank}</span> of {data.rank.of}
-          </span>
+          <span className="rise text-ink">{placing(data.rank.rank, data.rank.of)}</span>
         ) : failed ? null : (
           <span className="opacity-40">finding your place…</span>
         )}
@@ -93,38 +90,37 @@ export function RankReveal({ handle, fill }: { handle: string; fill: number }) {
  * badge is gone too: it read "YOU" beside whoever the page was about, which is
  * a lie on every page except your own.
  */
+/**
+ * One claim, not a row.
+ *
+ * It used to repeat the handle and the fill percentage that are already at
+ * the top of the same page, and sat "Top 12%" next to "8.2%" — two
+ * percentages meaning different things, side by side. The placing is the only
+ * thing here the rest of the page does not already say.
+ */
 export function RevealedRow({ handle }: { handle: string }) {
   const { data } = useSeen(handle);
-  const row = data?.rows.find((r) => r.handle.toLowerCase() === handle.toLowerCase());
-  if (!data || !row || !data.rank) return null;
+  if (!data?.rank) return null;
 
   return (
-    <section className="rise mt-14 flex flex-col gap-4">
+    <section className="rise mt-14 flex flex-col gap-3">
       <h2 className="text-[10px] font-bold tracking-[0.24em] text-muted uppercase">
         On the leaderboard
       </h2>
-
-      <div className="flex items-baseline gap-4 rounded-xl border border-accent/40 bg-accent/[0.06] px-5 py-4 sm:gap-5">
-        <span className="font-display text-3xl leading-none font-bold text-accent tabular-nums sm:text-4xl">
-          {data.rank.rank}
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 rounded-xl border border-accent/40 bg-accent/[0.06] px-5 py-5">
+        <span className="font-display text-3xl leading-none font-bold text-accent sm:text-4xl">
+          {placing(data.rank.rank, data.rank.of)}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-base sm:text-lg">{displayHandle(row.handle)}</span>
-          <span className="block text-xs text-muted tabular-nums">
-            {row.active_days}/{row.total_days} days
-          </span>
+        <span className="text-sm text-muted">
+          of {data.rank.of.toLocaleString()} year{data.rank.of === 1 ? "" : "s"} measured here
         </span>
-        <span className="font-display shrink-0 text-xl font-bold text-accent tabular-nums sm:text-2xl">
-          {row.fill_pct}%
-        </span>
+        <Link
+          href="/#leaderboard"
+          className="ml-auto text-xs tracking-[0.16em] text-muted uppercase underline-offset-4 hover:text-accent"
+        >
+          See the board →
+        </Link>
       </div>
-
-      <Link
-        href="/#leaderboard"
-        className="text-xs tracking-[0.16em] text-muted uppercase underline-offset-4 hover:text-accent"
-      >
-        See all {data.rank.of} →
-      </Link>
     </section>
   );
 }
