@@ -11,6 +11,17 @@ import { fillPct, leaderboardEnabled } from "@/lib/leaderboard";
    `x-vercel-cache: MISS` with `no-store`. The recording moved to /api/seen. */
 export const revalidate = 3600;
 
+/* `revalidate` on its own does NOT make a dynamic segment cacheable — with no
+   `generateStaticParams`, Next server-renders [username] on every request, and
+   the response comes back `no-store`. An empty list means "pre-render nothing,
+   but cache each path the first time somebody asks for it", which is exactly
+   right here: the usernames are not known ahead of time, and a shared poster
+   link is hit many times. */
+export const dynamicParams = true;
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {
