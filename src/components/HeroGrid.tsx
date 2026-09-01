@@ -52,7 +52,8 @@ function scatterMap() {
  * that mid-transition you saw both at once, and the gold came out muddy olive
  * — that was the dullness, not the colour itself. Here every cell owns two
  * colours and animates between them, so there is never a blend of two grids:
- * a year of dots draws itself in, holds, then resolves into the words.
+ * a year of dots draws itself in, the word writes across it, and it cycles
+ * back rather than resting on either state.
  */
 export function HeroGrid() {
   const word = wordMap();
@@ -79,10 +80,12 @@ export function HeroGrid() {
                     backgroundColor: from,
                     "--from": from,
                     "--to": to,
-                    // Draw in left to right, then morph in the same order, so
-                    // the word resolves as a sweep rather than all at once.
+                    // Draw in left to right, then write the word in the same
+                    // order. The morph stagger is deliberately wide — at a few
+                    // milliseconds per column the whole grid flipped at once,
+                    // which read as a cut rather than as writing.
                     "--in": `${c * 0.016}s`,
-                    "--morph": `${1.3 + c * 0.008}s`,
+                    "--morph": `${1.2 + c * 0.03}s`,
                   } as React.CSSProperties
                 }
               />

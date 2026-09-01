@@ -51,23 +51,27 @@ body { font-family: var(--font-body); }
 
 /* HERO.
    A year of contributions draws itself in, holds long enough to be read as a
-   graph, then resolves into the words. It runs ONCE and rests on the word —
-   the word is the brand, so it is the right thing to end on, and looping a
-   headline would become a tic.
+   graph, then the word writes itself across left to right — and back again on
+   a loop, so the page is never frozen on one state.
 
-   Each cell animates its own background between two fixed colours it carries
-   as custom properties. Two stacked layers cross-fading looked muddy: for the
-   middle of the transition you were seeing both grids at once. */
+   `alternate` is what makes the return leg free: the same keyframes run
+   backwards, and because each column carries its own delay the word un-writes
+   in the opposite direction rather than snapping off.
+
+   Each cell animates its OWN background between two fixed colours held as
+   custom properties. Two stacked grids cross-fading looked muddy — for the
+   middle of every transition you were seeing both at once, and gold over dim
+   composites to olive. */
 @keyframes hero-in { from { opacity: 0; transform: scale(.3) } to { opacity: 1; transform: scale(1) } }
 @keyframes hero-morph {
-  0%, 42%   { background-color: var(--from) }
-  72%, 100% { background-color: var(--to) }
+  0%,   32% { background-color: var(--from) }
+  68%, 100% { background-color: var(--to) }
 }
 .hero-cell {
   opacity: 0;
   animation:
     hero-in .45s cubic-bezier(.16,1,.3,1) var(--in) forwards,
-    hero-morph 4.2s cubic-bezier(.4,0,.2,1) var(--morph) forwards;
+    hero-morph 5s cubic-bezier(.4,0,.2,1) var(--morph) infinite alternate;
 }
 
 /* Reduced motion goes straight to the resting state: the word, no movement. */
