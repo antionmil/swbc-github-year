@@ -16,15 +16,26 @@ function level(n: number, max: number) {
  * scrolls sideways inside its own container — the same thing GitHub does, and
  * the reason the page itself never has to scroll.
  */
-export function Grid({ d }: { d: YearData }) {
+export function Grid({
+  d,
+  cell = 12,
+  gap = 3,
+  months = true,
+}: {
+  d: YearData;
+  cell?: number;
+  gap?: number;
+  months?: boolean;
+}) {
   const max = Math.max(1, ...d.calendar.flat());
-  const CELL = 12;
-  const GAP = 3;
+  const CELL = cell;
+  const GAP = gap;
   const step = CELL + GAP;
 
   return (
     <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <div style={{ width: d.calendar.length * step }}>
+        {months && (
         <div className="relative mb-1.5 h-4">
           {d.months.map((m) => (
             <span
@@ -36,6 +47,7 @@ export function Grid({ d }: { d: YearData }) {
             </span>
           ))}
         </div>
+        )}
         <div className="flex" style={{ gap: GAP }}>
           {d.calendar.map((week, i) => (
             <div key={i} className="flex flex-col" style={{ gap: GAP }}>

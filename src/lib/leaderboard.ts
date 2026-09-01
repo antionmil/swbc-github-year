@@ -5,13 +5,14 @@ import type { YearData } from "./github";
 /**
  * The leaderboard: who has filled the most of their calendar.
  *
- * You appear by being looked up — nobody is scraped in. That is the hook: the
- * ranking exists so someone wonders where they would land, and the only way to
- * find out is to run their own name.
+ * You appear only by signing in as yourself. Looking someone up never lists
+ * them: a lookup is a stranger typing a name, and being ranked on that would
+ * mean anyone could enter anyone.
  *
- * NOTE ON CONSENT: a lookup can be someone else running your name, so people
- * can end up listed without acting. The data is public either way, but that is
- * why `removeHandle` exists and why the page says how to get off it.
+ * NOTE ON THE WINDOW: every row covers the twelve months ending on the day it
+ * was measured, so two rows measured six months apart describe two different
+ * years. `to_date` is stored and shown for exactly that reason, and a row is
+ * rewritten each time its owner visits their own page.
  *
  * Everything degrades to "no leaderboard" when the env vars are absent, so the
  * site keeps working before Supabase is provisioned.
@@ -49,6 +50,9 @@ export type Row = {
   contributions: number;
   streak: number;
   updated_at: string;
+  from_date: string | null;
+  to_date: string | null;
+  includes_private: boolean;
 };
 
 /** Fill rate = days with at least one contribution / days in the range. */
@@ -81,6 +85,9 @@ export async function record(d: YearData): Promise<void> {
           total_days: d.calendar.flat().length,
           contributions: d.total,
           streak: d.streak,
+          from_date: d.from,
+          to_date: d.to,
+          includes_private: d.viaOwnToken,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "handle" },
@@ -97,7 +104,9 @@ export async function top(limit = 100): Promise<Row[]> {
   try {
     const { data, error } = await db()
       .from("leaderboard")
-      .select("handle:display_handle, fill_pct, active_days, total_days, contributions, streak, updated_at")
+      .select(
+        "handle:display_handle, fill_pct, active_days, total_days, contributions, streak, updated_at, from_date, to_date, includes_private",
+      )
       .order("fill_pct", { ascending: false })
       .order("contributions", { ascending: false })
       .limit(limit);
