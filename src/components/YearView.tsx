@@ -66,15 +66,18 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
 
       {slot}
 
-      {/* text-pretty stops the last word landing alone on its own line — the
-          orphaned "5." was exactly that. */}
-      <p className="mt-10 text-xl leading-relaxed text-balance text-ink/80 sm:text-2xl">
-        <span className="text-pretty">
-          {d.total.toLocaleString()} contributions across {d.activeDays} days
-          {d.totals.prs ? `, ${d.totals.prs} pull requests` : ""}
-          {d.streak > 1 ? `, and a longest unbroken run of ${d.streak}` : ""}.
-        </span>
-      </p>
+      {/* This line used to repeat the four tiles directly above it — the same
+          day count, the same streak, in words. A sentence earns its place by
+          saying something the numbers do not: the peak, and when the work
+          actually happened. */}
+      {d.total > 0 && (
+        <p className="mt-10 max-w-xl text-lg leading-relaxed text-pretty text-ink/75 sm:text-xl">
+          The busiest day carried {d.busiest.toLocaleString()} contribution
+          {d.busiest === 1 ? "" : "s"}
+          {d.weekendPct > 0 && <>, and {d.weekendPct}% of the year landed at weekends</>}
+          {d.totals.prs > 0 && <>, across {d.totals.prs.toLocaleString()} pull requests</>}.
+        </p>
+      )}
 
       {d.topRepos.length > 0 && (
         <section className="mt-12 flex flex-col gap-4">

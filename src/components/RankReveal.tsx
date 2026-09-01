@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Board } from "@/components/Board";
+import Link from "next/link";
 import type { Row } from "@/lib/leaderboard";
 
 /**
@@ -83,12 +83,46 @@ export function RankReveal({ handle, fill }: { handle: string; fill: number }) {
   );
 }
 
-export function RevealedBoard({ handle }: { handle: string }) {
+/**
+ * One row, not the whole board.
+ *
+ * The full list belongs on the home page. Here the question is narrow — where
+ * does THIS year land — and answering it with a hundred rows buries it. The
+ * badge is gone too: it read "YOU" beside whoever the page was about, which is
+ * a lie on every page except your own.
+ */
+export function RevealedRow({ handle }: { handle: string }) {
   const { data } = useSeen(handle);
-  if (!data?.rows.length) return null;
+  const row = data?.rows.find((r) => r.handle.toLowerCase() === handle.toLowerCase());
+  if (!data || !row || !data.rank) return null;
+
   return (
-    <div className="mt-14">
-      <Board rows={data.rows} highlight={handle} />
-    </div>
+    <section className="rise mt-14 flex flex-col gap-4">
+      <h2 className="text-[10px] font-bold tracking-[0.24em] text-muted uppercase">
+        On the leaderboard
+      </h2>
+
+      <div className="flex items-baseline gap-4 rounded-xl border border-accent/40 bg-accent/[0.06] px-5 py-4 sm:gap-5">
+        <span className="font-display text-3xl leading-none font-bold text-accent tabular-nums sm:text-4xl">
+          {data.rank.rank}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-base sm:text-lg">{row.handle}</span>
+          <span className="block text-xs text-muted tabular-nums">
+            {row.active_days}/{row.total_days} days
+          </span>
+        </span>
+        <span className="font-display shrink-0 text-xl font-bold text-accent tabular-nums sm:text-2xl">
+          {row.fill_pct}%
+        </span>
+      </div>
+
+      <Link
+        href="/#leaderboard"
+        className="text-xs tracking-[0.16em] text-muted uppercase underline-offset-4 hover:text-accent"
+      >
+        See all {data.rank.of} →
+      </Link>
+    </section>
   );
 }
