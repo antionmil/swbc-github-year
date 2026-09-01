@@ -41,7 +41,7 @@ export const leaderboardEnabled = Boolean(url && key);
 
 /** Service-role client. Server-only — this key must never reach the browser,
  *  which is what the `server-only` import at the top enforces. */
-const db = () => createClient(url!, key!, { auth: { persistSession: false } });
+export const db = () => createClient(url!, key!, { auth: { persistSession: false } });
 
 export type Row = {
   handle: string;

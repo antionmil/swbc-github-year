@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
      sets it and the leftmost entry is the real peer. Good enough to stop a
      loop; not a security boundary, and not treated as one. */
   const ip = (req.headers.get("x-forwarded-for") ?? "unknown").split(",")[0].trim();
-  if (!allow(ip)) {
+  if (!(await allow(ip))) {
     return NextResponse.json({ error: "slow down" }, { status: 429 });
   }
 
