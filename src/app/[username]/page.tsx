@@ -65,7 +65,7 @@ export default async function UserPage({ params }: { params: Promise<{ username:
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-[1000px] flex-col items-center gap-6 px-4 py-6 sm:px-6 sm:py-10">
+    <main className="mx-auto flex w-full min-w-0 max-w-[1000px] flex-col items-center gap-6 px-4 py-6 sm:px-6 sm:py-10">
       {/* An <img> scales for real, unlike a CSS-transformed poster: the layout
           box matches what is drawn, so there is no sideways scroll and no dead
           space. On a phone it also gives tap-to-zoom and long-press-to-save. */}
@@ -75,7 +75,12 @@ export default async function UserPage({ params }: { params: Promise<{ username:
         alt={`@${data.handle}'s year in commits`}
         width={1000}
         height={1500}
-        className="h-auto w-full rounded-lg"
+        /* min-w-0 is load-bearing. A flex item defaults to min-width:auto,
+           which for an image resolves to its INTRINSIC width - 1000px here -
+           so it refused to shrink and dragged the whole page wider than the
+           viewport. Everything else on the page was then centred inside a
+           1000px box and cut off at the right edge on a phone. */
+        className="block h-auto w-full max-w-full min-w-0 rounded-lg"
       />
 
       {data.total === 0 && (
@@ -86,9 +91,9 @@ export default async function UserPage({ params }: { params: Promise<{ username:
       )}
 
       <div className="flex flex-col items-center gap-3 pb-8 text-center">
-        <p className="text-sm text-muted">
-          Long-press or right-click the poster to save it. This link shows the same
-          thing for anyone.
+        <p className="max-w-sm text-balance text-sm text-muted">
+          Long-press the poster to save it. This link shows the same thing for
+          anyone.
         </p>
         <Link
           href="/"
