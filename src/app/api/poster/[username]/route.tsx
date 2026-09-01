@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { Poster } from "@/components/Poster";
+import { isClean } from "@/lib/clean";
 import { fetchYear, isValidLogin } from "@/lib/github";
 
 export const runtime = "nodejs";
@@ -60,7 +61,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ usernam
   const handle = decodeURIComponent(username);
 
   // Validate before spending a GraphQL call — same guard as the page.
-  if (!isValidLogin(handle)) return new Response("Not found", { status: 404 });
+  if (!isValidLogin(handle) || !isClean(handle)) return new Response("Not found", { status: 404 });
 
   let data;
   try {

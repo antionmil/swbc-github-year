@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { YearView, posterUrl } from "@/components/YearView";
+import { isClean } from "@/lib/clean";
 import { fetchYear, isValidLogin, UnknownUser, type YearData } from "@/lib/github";
 import { RankReveal, RevealedRow } from "@/components/RankReveal";
 import { fillPct, leaderboardEnabled } from "@/lib/leaderboard";
@@ -29,7 +30,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { username } = await params;
   const handle = decodeURIComponent(username);
-  if (!isValidLogin(handle)) return { title: "Not found" };
+  if (!isValidLogin(handle) || !isClean(handle)) return { title: "Not found" };
 
   const title = `@${handle} — A Year in Commits`;
   const description = `A year of @${handle}'s public GitHub contributions.`;
@@ -44,9 +45,30 @@ export async function generateMetadata({
   };
 }
 
+function Unavailable() {
+  return (
+    <main className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-5 px-6 text-center">
+      <h1 className="font-display text-3xl font-bold text-balance sm:text-4xl">
+        That one is not available
+      </h1>
+      <p className="text-pretty text-muted">Try another username.</p>
+      <Link
+        href="/"
+        className="rounded-full bg-accent px-7 py-3 text-sm font-bold tracking-[0.14em] text-ground uppercase"
+      >
+        Go back
+      </Link>
+    </main>
+  );
+}
+
 export default async function UserPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const handle = decodeURIComponent(username);
+
+  /* Refused before the fetch. Rendering it would put the name in the title,
+     the URL and the share card. */
+  if (!isClean(handle)) return <Unavailable />;
 
   let d: YearData;
   try {

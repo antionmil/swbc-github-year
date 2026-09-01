@@ -1,3 +1,4 @@
+import { displayHandle, isClean } from "@/lib/clean";
 import type { YearData } from "@/lib/github";
 
 /**
@@ -61,15 +62,16 @@ const label = (size: number, tracking: number, color = DIM) =>
 export function Poster({ d }: { d: YearData }) {
   const flat = d.calendar.flat();
   const max = Math.max(1, ...flat);
-  const langs = [...new Set(d.topRepos.map((r) => r.language).filter(Boolean))] as string[];
+  const repos = d.topRepos.filter((r) => isClean(r.name));
+  const langs = [...new Set(repos.map((r) => r.language).filter(Boolean))] as string[];
 
   /* Credits worth 0 are omitted. A real account returned 0 PRs, 0 issues and
      0 reviews — a billing block full of zeros reads as broken, not honest. */
   const credits: [string, string][] = [
-    ["Directed by", "@" + d.handle],
-    ...(d.topRepos[0] ? ([["Starring", d.topRepos[0].name]] as [string, string][]) : []),
-    ...(d.topRepos.length > 1
-      ? ([["Featuring", d.topRepos.slice(1, 3).map((r) => r.name).join(" and ")]] as [string, string][])
+    ["Directed by", "@" + displayHandle(d.handle)],
+    ...(repos[0] ? ([["Starring", repos[0].name]] as [string, string][]) : []),
+    ...(repos.length > 1
+      ? ([["Featuring", repos.slice(1, 3).map((r) => r.name).join(" and ")]] as [string, string][])
       : []),
     ...(langs[0] ? ([["Original language", langs[0]]] as [string, string][]) : []),
     ...(d.totals.reviews ? ([["Second unit", `${d.totals.reviews} reviews`]] as [string, string][]) : []),
@@ -157,7 +159,7 @@ export function Poster({ d }: { d: YearData }) {
             fontFamily: DISPLAY,
           }}
         >
-          @{d.handle}
+          @{displayHandle(d.handle)}
         </div>
         <div
           style={{
@@ -213,12 +215,12 @@ export function Poster({ d }: { d: YearData }) {
       </div>
 
       {/* cast */}
-      {d.topRepos.length > 0 && (
+      {repos.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 64 }}>
           <div style={{ display: "flex", marginBottom: 6, ...label(12, 4.3) }}>
             In order of appearance
           </div>
-          {d.topRepos.slice(0, 3).map((r) => (
+          {repos.slice(0, 3).map((r) => (
             <div
               key={r.name}
               style={{

@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { isClean } from "./clean";
 import type { YearData } from "./github";
 
 /**
@@ -74,6 +75,8 @@ function fail(where: string, error: { code?: string; message?: string } | null) 
 
 export async function record(d: YearData): Promise<void> {
   if (!leaderboardEnabled) return;
+  // A leaderboard is an editorial act. Some names do not go on it.
+  if (!isClean(d.handle)) return;
   try {
     const { error } = await db()
       .from("leaderboard")

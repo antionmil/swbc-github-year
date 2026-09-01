@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { displayHandle, isClean } from "@/lib/clean";
 import type { Row } from "@/lib/leaderboard";
 
 const day = (iso: string | null) =>
@@ -9,6 +10,8 @@ const day = (iso: string | null) =>
     : null;
 
 export function Board({ rows }: { rows: Row[] }) {
+  const shown = rows.filter((r) => isClean(r.handle));
+
   return (
     <section id="leaderboard" className="flex flex-col gap-5 scroll-mt-8">
       <header className="flex flex-col gap-2">
@@ -20,11 +23,11 @@ export function Board({ rows }: { rows: Row[] }) {
         </p>
       </header>
 
-      {rows.length === 0 ? (
+      {shown.length === 0 ? (
         <p className="text-sm text-muted">Nobody yet. The first username entered starts the list.</p>
       ) : (
         <ol className="flex flex-col">
-          {rows.map((r, i) => (
+          {shown.map((r, i) => (
             <li key={r.handle} className="rise" style={{ animationDelay: `${Math.min(i, 12) * 0.045}s` }}>
               <Link
                 href={`/${r.handle}`}

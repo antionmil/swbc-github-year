@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Grid } from "@/components/Grid";
+import { displayHandle, isClean } from "@/lib/clean";
 import type { YearData } from "@/lib/github";
 
 const MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -56,11 +57,11 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
           )}
           <div className="flex min-w-0 flex-col gap-0.5">
             <h1 className="font-display text-3xl leading-none font-bold break-words sm:text-5xl">
-              @{d.handle}
+              @{displayHandle(d.handle)}
             </h1>
             <p className="flex flex-wrap items-baseline gap-x-2 text-sm text-muted">
-              {d.name && <span className="text-ink">{d.name}</span>}
-              {d.name && <span aria-hidden>·</span>}
+              {d.name && isClean(d.name) && <span className="text-ink">{d.name}</span>}
+              {d.name && isClean(d.name) && <span aria-hidden>·</span>}
               <span className="tabular-nums">
                 {d.followers.toLocaleString()} follower{d.followers === 1 ? "" : "s"}
               </span>
@@ -68,7 +69,11 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
           </div>
         </div>
 
-        {d.bio && <p className="max-w-prose text-pretty text-muted">{d.bio}</p>}
+        {/* The bio is free text on someone else's profile. It is shown, not
+            vouched for — so it is shown only if it passes. */}
+        {d.bio && isClean(d.bio) && (
+          <p className="max-w-prose text-pretty text-muted">{d.bio}</p>
+        )}
 
         {/* The range is a rolling 12 months. Naming the months removes the
             contradiction with the old "2025 — 2026" over a Jan–Dec axis. */}
@@ -112,7 +117,7 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
       {d.topRepos.length > 0 && (
         <section className="mt-12 flex flex-col gap-4">
           <h2 className="text-[10px] font-bold tracking-[0.24em] text-muted uppercase">Most committed to</h2>
-          {d.topRepos.slice(0, 5).map((r) => (
+          {d.topRepos.filter((r) => isClean(r.name)).slice(0, 5).map((r) => (
             <a
               key={r.name}
               href={`https://github.com/${d.handle}/${r.name}`}
@@ -141,7 +146,7 @@ export function YearView({ d, slot, after }: { d: YearData; slot?: ReactNode; af
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={posterUrl(d.handle)}
-          alt={`@${d.handle}'s year in commits, as a poster`}
+          alt={`@${displayHandle(d.handle)}'s year in commits, as a poster`}
           width={1000}
           height={1500}
           loading="lazy"

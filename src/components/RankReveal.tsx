@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Board } from "@/components/Board";
+import { displayHandle } from "@/lib/clean";
 import Link from "next/link";
 import type { Row } from "@/lib/leaderboard";
 
@@ -107,7 +109,7 @@ export function RevealedRow({ handle }: { handle: string }) {
           {data.rank.rank}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-base sm:text-lg">{row.handle}</span>
+          <span className="block truncate text-base sm:text-lg">{displayHandle(row.handle)}</span>
           <span className="block text-xs text-muted tabular-nums">
             {row.active_days}/{row.total_days} days
           </span>
