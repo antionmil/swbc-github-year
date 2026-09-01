@@ -41,10 +41,20 @@ export function fillPct(d: YearData) {
   return Math.round((d.activeDays / totalDays) * 1000) / 10;
 }
 
+/** supabase-js RESOLVES on a database error — it returns `{ error }` rather
+ *  than throwing. Ignoring that field is how a rejected write becomes silent:
+ *  no exception, no log, and a leaderboard that stays empty with no clue why.
+ *  Every call in this file inspects `error` for that reason. */
+function fail(where: string, error: { code?: string; message?: string } | null) {
+  if (!error) return false;
+  console.error(`[leaderboard] ${where} failed`, error.code, error.message);
+  return true;
+}
+
 export async function record(d: YearData): Promise<void> {
   if (!leaderboardEnabled) return;
   try {
-    await db()
+    const { error } = await db()
       .from("profiles")
       .upsert(
         {
@@ -59,6 +69,7 @@ export async function record(d: YearData): Promise<void> {
         },
         { onConflict: "handle" },
       );
+    fail("upsert", error);
   } catch (e) {
     // A leaderboard write must never break someone's poster.
     console.error("[leaderboard] upsert failed", e);
@@ -87,16 +98,18 @@ export async function rankOf(handle: string): Promise<{ rank: number; of: number
   if (!leaderboardEnabled) return null;
   try {
     const c = db();
-    const [{ count: of }, mine] = await Promise.all([
+    const [all, mine] = await Promise.all([
       c.from("profiles").select("handle", { count: "exact", head: true }),
       c.from("profiles").select("fill_pct").eq("handle", handle.toLowerCase()).maybeSingle(),
     ]);
+    if (fail("rank count", all.error) || fail("rank self", mine.error)) return null;
     if (!mine.data) return null;
-    const { count: better } = await c
+    const { count: better, error } = await c
       .from("profiles")
       .select("handle", { count: "exact", head: true })
       .gt("fill_pct", mine.data.fill_pct);
-    return { rank: (better ?? 0) + 1, of: of ?? 0 };
+    if (fail("rank better", error)) return null;
+    return { rank: (better ?? 0) + 1, of: all.count ?? 0 };
   } catch (e) {
     console.error("[leaderboard] rank failed", e);
     return null;
