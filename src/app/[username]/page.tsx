@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { YearView, posterUrl } from "@/components/YearView";
 import { fetchYear, isValidLogin, UnknownUser, type YearData } from "@/lib/github";
-import { fillPct, leaderboardEnabled, rankOf } from "@/lib/leaderboard";
+import { fillPct, leaderboardEnabled, rankOf, record } from "@/lib/leaderboard";
 
 /* Cached and PUBLIC. This page never reads a cookie: doing so would make every
    username dynamic and cost a GitHub call per view. The signed-in view lives
@@ -61,9 +61,9 @@ export default async function UserPage({ params }: { params: Promise<{ username:
     );
   }
 
-  /* Reading the rank is fine for a stranger's page — it is public information
-     about a public board. WRITING is what needs consent, and no write happens
-     here: a lookup is someone typing a name, not that person joining. */
+  /* The page is ISR-cached for an hour, so this runs at most once per username
+     per hour however much traffic arrives. */
+  await record(d);
   const rank = leaderboardEnabled ? await rankOf(d.handle) : null;
 
   return (
@@ -74,17 +74,10 @@ export default async function UserPage({ params }: { params: Promise<{ username:
           <div className="mt-10 flex flex-wrap items-baseline gap-x-3 gap-y-2 rounded-xl border border-rule bg-surface px-5 py-4">
             <span className="font-display text-2xl font-bold text-accent">{fillPct(d)}%</span>
             <span className="text-sm text-muted">of the calendar filled</span>
-            {rank ? (
+            {rank && (
               <Link href="/leaderboard" className="ml-auto text-sm text-muted hover:text-accent">
                 <span className="text-ink">#{rank.rank}</span> of {rank.of}
               </Link>
-            ) : (
-              <a
-                href="/api/auth/login"
-                className="ml-auto text-xs font-bold tracking-[0.14em] text-accent uppercase underline-offset-4 hover:underline"
-              >
-                Sign in to join the board
-              </a>
             )}
           </div>
         )

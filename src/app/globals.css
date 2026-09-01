@@ -15,3 +15,9 @@
 
 html, body { background: var(--color-ground); color: var(--color-ink); }
 body { font-family: var(--font-body); }
+
+/* The hero calendar scrolls sideways on a narrow phone, but a visible
+   scrollbar cutting across the artwork reads as a rendering fault. The bar
+   goes; the scrolling stays. */
+.no-bar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-bar::-webkit-scrollbar { display: none; }

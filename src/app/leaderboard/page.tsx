@@ -48,7 +48,7 @@ export default async function Leaderboard() {
       </header>
 
       {rows.length === 0 ? (
-        <p className="mt-12 text-muted">Nobody yet. Sign in and you are the first.</p>
+        <p className="mt-12 text-muted">Nobody yet. Look up a username and it appears here.</p>
       ) : (
         <ol className="mt-10 flex flex-col">
           {rows.map((r, i) => (
@@ -70,7 +70,6 @@ export default async function Leaderboard() {
                 <div className="flex gap-3 pl-11 text-[11px] tracking-[0.12em] text-muted uppercase">
                   <span className="sm:hidden">{r.active_days}/{r.total_days} days</span>
                   {day(r.to_date) && <span>Year to {day(r.to_date)}</span>}
-                  {r.includes_private && <span className="text-accent/70">Private counted</span>}
                 </div>
               </Link>
             </li>
@@ -79,20 +78,20 @@ export default async function Leaderboard() {
       )}
 
       <footer className="mt-14 flex flex-col items-center gap-4 border-t border-rule pt-8 text-center">
-        <a
-          href="/api/auth/login"
+        <Link
+          href="/"
           className="rounded-full bg-accent px-7 py-3 text-sm font-bold tracking-[0.14em] text-ground uppercase"
         >
-          Add yourself with GitHub
-        </a>
-        <p className="max-w-md text-xs text-muted">
-          You appear here only by signing in as yourself — looking someone up never
-          lists them. Signing in also counts your private contributions on the days
-          they happened. One click removes you again.
-        </p>
-        <Link href="/" className="text-xs tracking-[0.18em] text-muted uppercase hover:text-accent">
-          Look up a username
+          Where would you land?
         </Link>
+        <p className="max-w-md text-xs text-muted">
+          You appear here by being looked up. It is public GitHub data — the same
+          numbers on your own profile — but if you would rather not be listed,{" "}
+          <a href="https://github.com/AntoineKoerber" className="underline underline-offset-4">
+            get in touch
+          </a>{" "}
+          and you will be removed.
+        </p>
       </footer>
     </main>
   );

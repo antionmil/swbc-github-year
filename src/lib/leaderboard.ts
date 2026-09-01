@@ -5,9 +5,9 @@ import type { YearData } from "./github";
 /**
  * The leaderboard: who has filled the most of their calendar.
  *
- * You appear only by signing in as yourself. Looking someone up never lists
- * them: a lookup is a stranger typing a name, and being ranked on that would
- * mean anyone could enter anyone.
+ * You appear by being looked up. Everything here is public GitHub data — the
+ * same numbers on that person's own profile page — so the row states no claim
+ * of identity. `removeHandle` exists and the page says how to use it.
  *
  * NOTE ON THE WINDOW: every row covers the twelve months ending on the day it
  * was measured, so two rows measured six months apart describe two different
@@ -87,7 +87,6 @@ export async function record(d: YearData): Promise<void> {
           streak: d.streak,
           from_date: d.from,
           to_date: d.to,
-          includes_private: d.viaOwnToken,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "handle" },

@@ -29,17 +29,10 @@ const FIELDS = `
         weeks { firstDay  contributionDays { date  contributionCount } }
       }`;
 
-/* Two ways in, one shape out.
-   - QUERY runs on the app token and sees only what a stranger sees.
-   - VIEWER_QUERY runs on the signed-in person's OWN token, and GitHub then
-     places their private contributions on the real days. That is the whole
-     reward for signing in: the grid stops under-reporting people who work in
-     private repositories. */
+/* One query, on the app token: exactly what a stranger can see. There is no
+   sign-in, so there is no path by which this site sees more than that. */
 const QUERY = `query($login:String!, $from:DateTime!, $to:DateTime!) {
   user(login:$login) { login name avatarUrl contributionsCollection(from:$from, to:$to) { ${FIELDS} } }
-}`;
-const VIEWER_QUERY = `query($from:DateTime!, $to:DateTime!) {
-  viewer { login name avatarUrl contributionsCollection(from:$from, to:$to) { ${FIELDS} } }
 }`;
 
 export type Repo = { name: string; language: string | null; commits: number };
@@ -60,9 +53,6 @@ export type YearData = {
    *  user has switched on private-contribution visibility on their profile. */
   privateCount: number;
   hasPrivate: boolean;
-  /** True when the data came from the person's OWN token, so private
-   *  contributions are counted on their real days rather than as a bare total. */
-  viaOwnToken: boolean;
   /** derived below - nothing here needs a field the API does not return */
   total: number;
   activeDays: number;
@@ -72,8 +62,6 @@ export type YearData = {
 };
 
 export class UnknownUser extends Error {}
-
-
 
 /** A rolling 12 months. January-to-now returns a partial grid (36 weeks in
  *  testing) and renders as a broken calendar. */
@@ -115,7 +103,7 @@ type RawUser = {
   contributionsCollection: Record<string, never> & Record<string, unknown>;
 };
 
-function shape(user: RawUser, from: Date, to: Date, viaOwnToken: boolean): YearData {
+function shape(user: RawUser, from: Date, to: Date): YearData {
   const c = user.contributionsCollection as unknown as {
     totalCommitContributions: number;
     totalPullRequestContributions: number;
@@ -182,7 +170,6 @@ function shape(user: RawUser, from: Date, to: Date, viaOwnToken: boolean): YearD
     months,
     privateCount: c.restrictedContributionsCount ?? 0,
     hasPrivate: Boolean(c.hasAnyRestrictedContributions),
-    viaOwnToken,
     total,
     activeDays: flat.filter((n) => n > 0).length,
     busiest: Math.max(0, ...flat),
@@ -207,14 +194,5 @@ export async function fetchYear(login: string): Promise<YearData> {
     throw e;
   }
   if (!data?.user) throw new UnknownUser(login);
-  return shape(data.user, from, to, false);
-}
-
-/** What YOU can see about yourself. Runs on the OAuth token from the callback,
- *  which is used here and then discarded - never stored. */
-export async function fetchViewerYear(token: string): Promise<YearData> {
-  const { from, to } = windowNow();
-  const data = await call(token, VIEWER_QUERY, { from: from.toISOString(), to: to.toISOString() }, false);
-  if (!data?.viewer) throw new Error("GitHub returned no viewer for that token.");
-  return shape(data.viewer, from, to, true);
+  return shape(data.user, from, to);
 }

@@ -45,20 +45,12 @@ export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
 
       <section className="mt-10">
         <Grid d={d} />
-        {d.viaOwnToken ? (
-          d.hasPrivate && (
-            <p className="mt-4 text-sm text-muted">
-              Your private contributions are counted here, on the days they happened.
-            </p>
-          )
-        ) : (
-          d.hasPrivate && (
-            <p className="mt-4 text-sm text-muted">
-              Plus <span className="text-ink">{d.privateCount.toLocaleString()}</span> contributions in
-              private repositories. GitHub reports the total but never which days they fell on, so they
-              cannot be plotted.
-            </p>
-          )
+        {d.hasPrivate && (
+          <p className="mt-4 text-sm text-muted">
+            Plus <span className="text-ink">{d.privateCount.toLocaleString()}</span> contributions in
+            private repositories. GitHub reports the total but never which days they fell on, so they
+            cannot be plotted.
+          </p>
         )}
       </section>
 
@@ -100,7 +92,6 @@ export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
           <h2 className="font-display text-2xl font-bold">Take the poster</h2>
           <p className="text-sm text-muted">
             The same year, laid out like film credits. Shareable, printable.
-            {d.viaOwnToken ? " It shows public contributions, so it matches what others see." : ""}
           </p>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
