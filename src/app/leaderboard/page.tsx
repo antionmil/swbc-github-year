@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { leaderboardEnabled, top } from "@/lib/leaderboard";
 
-export const revalidate = 300;
+/* Dynamic, not ISR. Freshness IS the product here: you arrive from the rank
+   line on your own page, and a board that does not yet list you reads as
+   broken. ISR served the build-time prerender - an empty table - and
+   stale-while-revalidate means a low-traffic site keeps showing whatever the
+   last visitor triggered. One indexed query per view is the cheaper mistake. */
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Leaderboard — A Year in Commits",
