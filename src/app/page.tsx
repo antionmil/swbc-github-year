@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Board } from "@/components/Board";
 import { HeroGrid } from "@/components/HeroGrid";
+import { LiveCount } from "@/components/LiveCount";
 import { LookupForm } from "@/components/LookupForm";
 import { leaderboardEnabled, topCached } from "@/lib/leaderboard";
 
@@ -38,6 +39,8 @@ export default async function Home() {
       </section>
 
       {leaderboardEnabled && <Board rows={rows} />}
+
+      <LiveCount />
 
       <footer className="border-t border-rule pt-8 text-center text-xs text-muted">
         Built in a day ·{" "}

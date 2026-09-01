@@ -19,7 +19,17 @@ import { db, leaderboardEnabled } from "@/lib/leaderboard";
  * In-memory is kept in FRONT of it as a free short-circuit: on a warm instance
  * a sequential loop is stopped without touching the database at all.
  */
-const PER_HOUR = 80;
+/* 500, not 80.
+   What this protects is narrow: a scripted loop burning the 5,000/hour GitHub
+   ceiling, which would error the site for everyone until the window rolls. It
+   protects nothing against genuine viral traffic, because five thousand real
+   people each looking up one new name exhausts the same quota and every one of
+   them is under the limit.
+   Meanwhile the cost of setting it low is real: mobile carriers and offices
+   put hundreds of genuine visitors behind one address, and that happens
+   precisely on the day a post lands. 500 an hour is a number no person reaches
+   by browsing and a script passes in seconds. */
+const PER_HOUR = 500;
 const MAX_KEYS = 20_000;
 
 const local = new Map<string, { n: number; hour: number }>();
