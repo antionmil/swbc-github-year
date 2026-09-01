@@ -21,11 +21,14 @@ export function Grid({
   cell = 12,
   gap = 3,
   months = true,
+  cascade = false,
 }: {
   d: YearData;
   cell?: number;
   gap?: number;
   months?: boolean;
+  /** Draw the year in, week by week, once on load. */
+  cascade?: boolean;
 }) {
   const max = Math.max(1, ...d.calendar.flat());
   const CELL = cell;
@@ -48,7 +51,7 @@ export function Grid({
           ))}
         </div>
         )}
-        <div className="flex" style={{ gap: GAP }}>
+        <div className={`flex ${cascade ? "cascade" : ""}`} style={{ gap: GAP }}>
           {d.calendar.map((week, i) => (
             <div key={i} className="flex flex-col" style={{ gap: GAP }}>
               {week.map((n, j) => (
@@ -60,6 +63,9 @@ export function Grid({
                     height: CELL,
                     borderRadius: 2,
                     background: LEVELS[level(n, max)],
+                    // Stagger by WEEK, not by cell: the year should read as
+                    // sweeping left to right, not as 366 unrelated pops.
+                    ...(cascade ? { animationDelay: `${i * 0.018}s` } : {}),
                   }}
                 />
               ))}

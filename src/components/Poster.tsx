@@ -21,7 +21,7 @@ const DIM = "#8b8578";
 const GOLD = "#e8b23c";
 const RULE = "#2a2823";
 
-const DISPLAY = "Display, Georgia, serif";
+const DISPLAY = "Display, system-ui, sans-serif";
 const BODY = "Body, system-ui, sans-serif";
 
 /* GitHub usernames run to 39 characters. At a fixed 104px "@AntoineKoerber"
@@ -181,8 +181,7 @@ export function Poster({ d }: { d: YearData }) {
             lineHeight: 1.42,
             color: BONE,
             opacity: 0.82,
-            fontStyle: "italic",
-            fontFamily: DISPLAY,
+                        fontFamily: DISPLAY,
           }}
         >
           {d.total.toLocaleString()} contributions across {d.activeDays} days.

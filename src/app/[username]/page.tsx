@@ -75,7 +75,7 @@ export default async function UserPage({ params }: { params: Promise<{ username:
             <span className="font-display text-2xl font-bold text-accent">{fillPct(d)}%</span>
             <span className="text-sm text-muted">of the calendar filled</span>
             {rank && (
-              <Link href="/leaderboard" className="ml-auto text-sm text-muted hover:text-accent">
+              <Link href="/#leaderboard" className="ml-auto text-sm text-muted hover:text-accent">
                 <span className="text-ink">#{rank.rank}</span> of {rank.of}
               </Link>
             )}

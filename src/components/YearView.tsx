@@ -44,7 +44,7 @@ export function YearView({ d, slot }: { d: YearData; slot?: ReactNode }) {
       </header>
 
       <section className="mt-10">
-        <Grid d={d} />
+        <Grid d={d} cascade />
         {d.hasPrivate && (
           <p className="mt-4 text-sm text-muted">
             Plus <span className="text-ink">{d.privateCount.toLocaleString()}</span> contributions in

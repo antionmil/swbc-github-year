@@ -22,8 +22,8 @@ export const revalidate = 3600;
  * same helper here.
  */
 const FONTS: Record<string, string> = {
-  Display: "https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@700;900&display=swap",
-  Body: "https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;700&display=swap",
+  Display: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap",
+  Body: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&display=swap",
 };
 
 const cache = new Map<string, ArrayBuffer>();

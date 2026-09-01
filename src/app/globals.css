@@ -9,8 +9,10 @@
   --color-muted: #8b8578;
   --color-rule: #2a2823;
   --color-accent: #e8b23c;
-  --font-display: "Bodoni Moda", ui-serif, Georgia, serif;
-  --font-body: "Archivo Narrow", ui-sans-serif, system-ui, sans-serif;
+  /* One family. Space Grotesk carries both the display sizes and the body,
+     so nothing has to be matched across two typefaces. */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
 html, body { background: var(--color-ground); color: var(--color-ink); }
@@ -21,3 +23,24 @@ body { font-family: var(--font-body); }
    goes; the scrolling stays. */
 .no-bar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-bar::-webkit-scrollbar { display: none; }
+
+/* A grotesque at display size needs the tracking pulled in; the defaults are
+   drawn for text, not for headlines. */
+.font-display { letter-spacing: -0.03em; }
+
+/* MOTION.
+   Both run ONCE on load, never on a loop — looping content motion becomes a
+   tic. The grid draws itself left to right, then the words settle after it. */
+@keyframes cell-in { from { opacity: 0; transform: scale(.35) } to { opacity: 1; transform: scale(1) } }
+@keyframes rise    { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+
+.cascade > * > * { opacity: 0; animation: cell-in .5s cubic-bezier(.16,1,.3,1) forwards; }
+.rise { opacity: 0; animation: rise .7s cubic-bezier(.16,1,.3,1) forwards; }
+.rise-1 { animation-delay: .10s } .rise-2 { animation-delay: .20s }
+.rise-3 { animation-delay: .30s } .rise-4 { animation-delay: .40s }
+
+/* Drifting or rising content triggers motion sickness for some people, and
+   turning it off is two lines. Everything lands in its final state instead. */
+@media (prefers-reduced-motion: reduce) {
+  .cascade > * > *, .rise { opacity: 1; animation: none; transform: none; }
+}
