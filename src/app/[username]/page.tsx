@@ -65,7 +65,11 @@ export default async function UserPage({ params }: { params: Promise<{ username:
   }
 
   return (
-    <main className="mx-auto flex w-full min-w-0 max-w-[1000px] flex-col items-center gap-6 px-4 py-6 sm:px-6 sm:py-10">
+    /* A plain BLOCK container, not flex. A flex item's width resolution left
+       the image wider than the viewport on a phone - the poster was centred
+       and clipped on both edges (JAN and DEC both lost). A block-level img
+       with width:100% inside a block parent has no such ambiguity. */
+    <main className="mx-auto w-full max-w-[1000px] px-4 py-6 sm:px-6 sm:py-10">
       {/* An <img> scales for real, unlike a CSS-transformed poster: the layout
           box matches what is drawn, so there is no sideways scroll and no dead
           space. On a phone it also gives tap-to-zoom and long-press-to-save. */}
@@ -75,22 +79,18 @@ export default async function UserPage({ params }: { params: Promise<{ username:
         alt={`@${data.handle}'s year in commits`}
         width={1000}
         height={1500}
-        /* min-w-0 is load-bearing. A flex item defaults to min-width:auto,
-           which for an image resolves to its INTRINSIC width - 1000px here -
-           so it refused to shrink and dragged the whole page wider than the
-           viewport. Everything else on the page was then centred inside a
-           1000px box and cut off at the right edge on a phone. */
-        className="block h-auto w-full max-w-full min-w-0 rounded-lg"
+        className="block rounded-lg"
+        style={{ width: "100%", height: "auto", maxWidth: "100%" }}
       />
 
       {data.total === 0 && (
-        <p className="max-w-md text-center text-sm text-muted">
+        <p className="mx-auto mt-6 max-w-md text-center text-sm text-muted">
           @{data.handle} has no public contributions in the last year. The poster is
           real — it is just a quiet year.
         </p>
       )}
 
-      <div className="flex flex-col items-center gap-3 pb-8 text-center">
+      <div className="mt-6 flex flex-col items-center gap-3 pb-8 text-center">
         <p className="max-w-sm text-balance text-sm text-muted">
           Long-press the poster to save it. This link shows the same thing for
           anyone.

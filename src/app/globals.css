@@ -14,4 +14,6 @@
 }
 
 html, body { background: var(--color-ground); color: var(--color-ink); }
+/* Backstop: nothing on this site should ever scroll sideways on a phone. */
+html { overflow-x: hidden; }
 body { font-family: var(--font-body); }
