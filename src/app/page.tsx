@@ -17,6 +17,8 @@ export default async function Home() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-14 px-5 py-14 sm:px-6 sm:py-20">
       <section className="flex flex-col gap-9">
+        <LiveCount />
+
         <HeroGrid />
 
         <header className="flex flex-col gap-4 text-center">
@@ -39,8 +41,6 @@ export default async function Home() {
       </section>
 
       {leaderboardEnabled && <Board rows={rows} />}
-
-      <LiveCount />
 
       <footer className="border-t border-rule pt-8 text-center text-xs text-muted">
         Built in a day ·{" "}

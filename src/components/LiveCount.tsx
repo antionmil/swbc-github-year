@@ -6,6 +6,10 @@ type Counts = { online?: number; week?: number; total?: number };
 
 const KEY = "odb.vid";
 
+/** Below this, the weekly and all-time figures are hidden rather than shown
+ *  small. Lower it once the numbers stand on their own. */
+const MEANINGFUL = 100;
+
 /** One id per browser, kept locally. It is random, it is not tied to anything,
  *  and it is the only thing sent — which is what makes "all-time visitors"
  *  mean people rather than page views. */
@@ -55,9 +59,12 @@ export function LiveCount() {
     };
   }, []);
 
-  // Nothing until there is something true to say. A pill reading "0 online"
-  // is worse than no pill.
+  /* Small real numbers read worse than no numbers, so the totals stay hidden
+     until they mean something. "online now" shows from the first visitor —
+     it is a live number, and a live 2 still reads as a site with people on
+     it, where "2 all time" reads as a site nobody uses. */
   if (!c?.total) return null;
+  const showTotals = c.total >= MEANINGFUL;
 
   return (
     <div className="mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full border border-rule px-5 py-2.5 text-xs text-muted">
@@ -70,14 +77,16 @@ export function LiveCount() {
           <span className="font-medium text-ink tabular-nums">{fmt(c.online)}</span> online now
         </span>
       )}
-      {typeof c.week === "number" && (
+      {showTotals && typeof c.week === "number" && (
         <span>
           <span className="font-medium text-ink tabular-nums">{fmt(c.week)}</span> this week
         </span>
       )}
-      <span>
-        <span className="font-medium text-ink tabular-nums">{fmt(c.total)}</span> all time
-      </span>
+      {showTotals && (
+        <span>
+          <span className="font-medium text-ink tabular-nums">{fmt(c.total)}</span> all time
+        </span>
+      )}
     </div>
   );
 }
